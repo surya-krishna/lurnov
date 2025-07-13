@@ -12,7 +12,7 @@
       <p class="text-base sm:text-lg md:text-xl text-cyan-100 mb-8 max-w-2xl mx-auto">
         Our revolutionary AI platform transforms complex subjects into simple, engaging learning experiences. Unlock your full potential today.
       </p>
-      <a href="#features" class="bg-gradient-to-r from-[#2563eb]  to-[#23244a] hover:from-[#0abfff] hover:to-[#2563eb] text-white font-bold py-2 sm:py-3 px-6 sm:px-8 rounded-full text-base sm:text-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-cyan-500/30" style="z-index:15;">
+      <a (click)="openAppPopup(true)" class="bg-gradient-to-r from-[#2563eb]  to-[#23244a] hover:from-[#0abfff] hover:to-[#2563eb] text-white font-bold py-2 sm:py-3 px-6 sm:px-8 rounded-full text-base sm:text-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-cyan-500/30" style="z-index:15; cursor:pointer;">
         Get Started
       </a>
     </div>
@@ -122,6 +122,24 @@
 <!-- CTA Section -->
 <section id="cta" class="relative py-10 sm:py-20 bg-gradient-to-b from-[#0a0a12] via-[#181a2a] to-[#23244a] flex flex-col items-center text-center overflow-hidden ">
   <h2 class="text-xl sm:text-3xl md:text-5xl font-bold text-white mb-2 sm:mb-4 drop-shadow-glow z-10">Ready to transform learning for your child?</h2>
-  <p class="text-base sm:text-lg md:text-xl text-cyan mb-4 sm:mb-8 z-10">Start free today. No login required.</p>
-  <a routerLink="/contact" class="bg-gradient-to-r from-[#2563eb]  to-[#23244a] hover:from-[#0abfff] hover:to-[#2563eb] text-white font-bold py-2 sm:py-3 px-6 sm:px-8 rounded-full text-base sm:text-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-cyan-500/30" style="z-index:15;">Try Lurnov Free</a>
+  <p class="text-base sm:text-lg md:text-xl text-cyan mb-4 sm:mb-8 z-10">Start free today. No login required. Just install the app and get started.</p>
+  <a (click)="openAppPopup(true)" class="bg-gradient-to-r from-[#2563eb]  to-[#23244a] hover:from-[#0abfff] hover:to-[#2563eb] text-white font-bold py-2 sm:py-3 px-6 sm:px-8 rounded-full text-base sm:text-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-cyan-500/30" style="z-index:15;">Try Lurnov Free</a>
 </section>
+
+<!-- App Download Popup -->
+<div *ngIf="showAppPopup" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+  <div class="bg-[#23244a] rounded-2xl shadow-4xl p-4 sm:p-8 w-full max-w-xs sm:max-w-md md:max-w-lg lg:max-w-xl text-center relative flex flex-col items-center">
+    <button (click)="closeAppPopup()" class="absolute top-4 right-4 text-white text-2xl font-bold">&times;</button>
+    <h2 class="text-2xl font-bold text-primary mb-4">Get the Lurnov App!</h2>
+    <p class="text-base text-cyan mb-6">Experience smarter learning, instant doubt solving, and personalized progress tracking. Download now and unlock your full potential!</p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center items-center w-full mb-2">
+      <a href="https://play.google.com/store/apps/details?id=com.lurnov.app" target="_blank" rel="noopener" class="flex-1 flex items-center justify-center">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" class="h-12 sm:h-14 md:h-16 w-auto mx-auto" />
+      </a>
+      <a *ngIf="showIos" href="https://apps.apple.com/app/id1234567890" target="_blank" rel="noopener" class="flex-1 flex items-center justify-center">
+        <img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" alt="Download on the App Store" class="h-12 sm:h-14 md:h-16 w-auto mx-auto" />
+      </a>
+    </div>
+    <p class="text-xs text-gray-300 mt-2">Available on Google Play and App Store</p>
+  </div>
+</div>
