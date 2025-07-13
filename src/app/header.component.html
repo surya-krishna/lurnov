@@ -1,0 +1,34 @@
+<header class="fixed top-0 left-0 w-full z-50 bg-background/80 backdrop-blur-xs shadow-glass transition-all">
+  <nav class="max-w-7xl mx-auto flex items-center justify-between px-4 py-3 md:py-4">
+    <div class="flex items-center gap-2">
+      <span class="text-xl md:text-2xl font-bold text-primary tracking-wide" style="font-family:  sans-serif;">Lurnov</span>
+    </div>
+    <ul class="hidden md:flex gap-8 text-white font-medium">
+      <li><a href="#home" class="hover:text-primary transition">Home</a></li>
+      <li><a href="#features" class="hover:text-primary transition">Features</a></li>
+      <li><a href="#why" class="hover:text-primary transition">Why Lurnov</a></li>
+      <li><a href="#testimonials" class="hover:text-primary transition">Testimonials</a></li>
+      <li><a routerLink="/blog" routerLinkActive="active" class="hover:text-primary transition">Blog</a></li>
+      <li><a routerLink="/about" class="hover:text-primary transition">About Us</a></li>
+      <li><a routerLink="/contact" class="hover:text-primary transition">Contact Us</a></li>
+    </ul>
+    <a href="#cta" class="bg-gradient-to-r from-[#2563eb]  to-[#23244a] hover:from-[#0abfff] hover:to-[#2563eb] text-white font-bold py-2 sm:py-3 px-6 sm:px-8 rounded-full text-base sm:text-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-cyan-500/30">Try Lurnov Free</a>
+    <button class="md:hidden flex items-center" (click)="toggleMenu()" aria-label="Open menu">
+      <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+      </svg>
+    </button>
+  </nav>
+  <div *ngIf="menuOpen" class="md:hidden bg-background/95 backdrop-blur-xs absolute top-full left-0 w-full shadow-glass animate-fade-in">
+    <ul class="flex flex-col gap-4 p-6 text-white font-medium">
+      <li><a href="#home" (click)="closeMenu()">Home</a></li>
+      <li><a href="#features" (click)="closeMenu()">Features</a></li>
+      <li><a href="#why" (click)="closeMenu()">Why Lurnov</a></li>
+      <li><a href="#testimonials" (click)="closeMenu()">Testimonials</a></li>
+      <li><a routerLink="/blog" (click)="closeMenu()">Blog</a></li>
+      <li><a routerLink="/about" (click)="closeMenu()">About Us</a></li>
+      <li><a routerLink="/contact" (click)="closeMenu()">Contact Us</a></li>
+      <li><a href="#cta" (click)="closeMenu()" class="bg-primary text-background px-6 py-2 rounded-full font-semibold transition border border-primary hover:shadow-glow">Try Lurnov Free</a></li>
+    </ul>
+  </div>
+</header>
