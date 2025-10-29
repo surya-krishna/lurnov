@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build && copy src\\CNAME dist\\lurnov\\browser\\CNAME",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
@@ -29,6 +29,7 @@
     "@angular/cli": "^18.2.2",
     "@angular/compiler-cli": "^18.2.0",
     "@types/jasmine": "~5.1.0",
+    "angular-cli-ghpages": "^2.0.3",
     "autoprefixer": "^10.4.21",
     "jasmine-core": "~5.2.0",
     "karma": "~6.4.0",

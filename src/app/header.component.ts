@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 
 @Component({
   selector: 'app-header',
@@ -13,4 +13,17 @@ export class HeaderComponent {
   menuOpen = false;
   toggleMenu() { this.menuOpen = !this.menuOpen; }
   closeMenu() { this.menuOpen = false; }
+
+  private router = inject(Router);
+
+  navigateToSection(section: string) {
+    const isHome = this.router.url === '/' || this.router.url === '/#' || this.router.url === '/#/';
+    if (isHome) {
+      // If already on home, just update the fragment to scroll
+      window.location.hash = section;
+    } else {
+      this.router.navigate(['/'], { fragment: section });
+    }
+    this.closeMenu();
+  }
 }

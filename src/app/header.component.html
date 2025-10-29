@@ -4,10 +4,10 @@
       <span class="text-xl md:text-2xl font-bold text-primary tracking-wide" style="font-family:  sans-serif;">Lurnov</span>
     </div>
     <ul class="hidden md:flex gap-8 text-white font-medium">
-      <li><a href="#home" class="hover:text-primary transition">Home</a></li>
-      <li><a href="#features" class="hover:text-primary transition">Features</a></li>
-      <li><a href="#why" class="hover:text-primary transition">Why Lurnov</a></li>
-      <li><a href="#testimonials" class="hover:text-primary transition">Testimonials</a></li>
+      <li><a href="#home" (click)="navigateToSection('home'); $event.preventDefault()" class="hover:text-primary transition">Home</a></li>
+      <li><a href="#features" (click)="navigateToSection('features'); $event.preventDefault()" class="hover:text-primary transition">Features</a></li>
+      <li><a href="#why" (click)="navigateToSection('why'); $event.preventDefault()" class="hover:text-primary transition">Why Lurnov</a></li>
+      <li><a href="#testimonials" (click)="navigateToSection('testimonials'); $event.preventDefault()" class="hover:text-primary transition">Testimonials</a></li>
       <li><a routerLink="/blog" routerLinkActive="active" class="hover:text-primary transition">Blog</a></li>
       <li><a routerLink="/about" class="hover:text-primary transition">About Us</a></li>
       <li><a routerLink="/contact" class="hover:text-primary transition">Contact Us</a></li>
@@ -21,10 +21,10 @@
   </nav>
   <div *ngIf="menuOpen" class="md:hidden bg-background/95 backdrop-blur-xs absolute top-full left-0 w-full shadow-glass animate-fade-in">
     <ul class="flex flex-col gap-4 p-6 text-white font-medium">
-      <li><a href="#home" (click)="closeMenu()">Home</a></li>
-      <li><a href="#features" (click)="closeMenu()">Features</a></li>
-      <li><a href="#why" (click)="closeMenu()">Why Lurnov</a></li>
-      <li><a href="#testimonials" (click)="closeMenu()">Testimonials</a></li>
+      <li><a href="#home" (click)="navigateToSection('home'); $event.preventDefault()">Home</a></li>
+      <li><a href="#features" (click)="navigateToSection('features'); $event.preventDefault()">Features</a></li>
+      <li><a href="#why" (click)="navigateToSection('why'); $event.preventDefault()">Why Lurnov</a></li>
+      <li><a href="#testimonials" (click)="navigateToSection('testimonials'); $event.preventDefault()">Testimonials</a></li>
       <li><a routerLink="/blog" (click)="closeMenu()">Blog</a></li>
       <li><a routerLink="/about" (click)="closeMenu()">About Us</a></li>
       <li><a routerLink="/contact" (click)="closeMenu()">Contact Us</a></li>

@@ -8,6 +8,7 @@ import { DeleteAccountComponent } from './delete-account.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
+  { path: 'home', component: HomeComponent },
   { path: 'blog', component: BlogComponent },
   { path: 'blog/:id', component: BlogPostComponent },
   { path: 'about', component: AboutComponent },
