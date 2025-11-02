@@ -2,11 +2,10 @@ import { Component } from '@angular/core';
 import { NgIf } from '@angular/common';
 
 @Component({
-  selector: 'app-contact',
-  standalone: true,
-  imports: [NgIf],
-  templateUrl: './contact.component.html',
-  styles: [`
+    selector: 'app-contact',
+    imports: [NgIf],
+    templateUrl: './contact.component.html',
+    styles: [`
     :host {
       --primary: #5f6fff;
       --accent: #00ff99; //a259ff

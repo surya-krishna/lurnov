@@ -3,11 +3,10 @@ import * as THREE from 'three';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-home',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './home.component.html',
-  styles: [`
+    selector: 'app-home',
+    imports: [CommonModule],
+    templateUrl: './home.component.html',
+    styles: [`
     :host {
       --primary: #5f6fff;
       --accent: #a259ff;

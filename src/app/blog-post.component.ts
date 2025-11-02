@@ -170,11 +170,10 @@ export const BLOG_POSTS = [
 ];
 
 @Component({
-  selector: 'app-blog-post',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './blog-post.component.html',
-  styles: [``]
+    selector: 'app-blog-post',
+    imports: [CommonModule],
+    templateUrl: './blog-post.component.html',
+    styles: [``]
 })
 export class BlogPostComponent {
   post: any;

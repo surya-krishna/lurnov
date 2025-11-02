@@ -4,11 +4,10 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { ApiService } from './api-service';
 @Component({
-  selector: 'app-delete-account',
-  standalone: true,
-  imports: [FormsModule, CommonModule, HttpClientModule],
-  providers: [ApiService],
-  templateUrl: './delete-account.component.html'
+    selector: 'app-delete-account',
+    imports: [FormsModule, CommonModule, HttpClientModule],
+    providers: [ApiService],
+    templateUrl: './delete-account.component.html'
 })
 export class DeleteAccountComponent {
   email = '';
