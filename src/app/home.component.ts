@@ -3,10 +3,10 @@ import * as THREE from 'three';
 import { CommonModule } from '@angular/common';
 
 @Component({
-    selector: 'app-home',
-    imports: [CommonModule],
-    templateUrl: './home.component.html',
-    styles: [`
+  selector: 'app-home',
+  imports: [CommonModule],
+  templateUrl: './home.component.html',
+  styles: [`
     :host {
       --primary: #5f6fff;
       --accent: #a259ff;
@@ -201,7 +201,7 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
     this.showAppPopup = false;
   }
   redirectToAndroid() {
-    window.open('https://play.google.com/store/apps/details?id=com.lurnov.app', '_blank');
+    window.open('https://play.google.com/store/apps/details?id=com.adroytz.lurnov', '_blank');
   }
   redirectToIos() {
     window.open('https://apps.apple.com/app/id1234567890', '_blank');
