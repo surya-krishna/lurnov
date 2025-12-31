@@ -1,0 +1,14 @@
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+.thumbnail-dropzone {
+	transition: border-color .15s ease-in-out, background-color .15s ease-in-out;
+}
+.thumbnail-preview img {
+	transition: transform .15s ease-in-out;
+}
+.thumbnail-preview img:hover {
+	transform: scale(1.02);
+}
+input{
+    color:#000 !important;
+}

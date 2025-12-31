@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap');
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* Custom global styles */
 
@@ -12,4 +12,32 @@ body {
   font-size: 16px;
   font-weight: 400;
   transition: all 0.3s ease-in-out;
+}
+
+/* KaTeX formula styles for Quill editor */
+.ql-editor .ql-formula {
+  background-color: #f3f4f6;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-family: 'Courier New', monospace;
+}
+
+.ql-editor .katex {
+  font-size: 1.1em;
+}
+
+.ql-editor .katex-display {
+  margin: 1em 0;
+  display: block;
+  text-align: center;
+}
+
+/* Inline formula styling */
+.ql-editor .katex-inline {
+  display: inline;
+}
+
+/* Support for formula tooltip on hover */
+.ql-tooltip.ql-formula::before {
+  content: 'Formula';
 }

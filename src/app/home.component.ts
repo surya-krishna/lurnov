@@ -3,11 +3,11 @@ import * as THREE from 'three';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-home',
+    selector: 'app-home',
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './home.component.html',
-  styles: [`
+    imports: [CommonModule],
+    templateUrl: './home.component.html',
+    styles: [`
     :host {
       --primary: #5f6fff;
       --accent: #a259ff;
@@ -68,6 +68,9 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   private mouseX = 0;
   private mouseY = 0;
   private sizes = { width: window.innerWidth, height: window.innerHeight };
+
+  showAppPopup = false;
+  showIos = true;
 
   ngAfterViewInit() {
     this.initThreeJS();
@@ -189,5 +192,19 @@ export class HomeComponent implements AfterViewInit, OnDestroy {
   private onDocumentMouseMove(event: MouseEvent) {
     this.mouseX = (event.clientX - this.sizes.width / 2) / (this.sizes.width / 2);
     this.mouseY = (event.clientY - this.sizes.height / 2) / (this.sizes.height / 2);
+  }
+
+  openAppPopup(showIos: boolean = true) {
+    this.showAppPopup = true;
+    this.showIos = showIos;
+  }
+  closeAppPopup() {
+    this.showAppPopup = false;
+  }
+  redirectToAndroid() {
+    window.open('https://play.google.com/store/apps/details?id=com.adroytz.lurnov', '_blank');
+  }
+  redirectToIos() {
+    window.open('https://apps.apple.com/app/id1234567890', '_blank');
   }
 }

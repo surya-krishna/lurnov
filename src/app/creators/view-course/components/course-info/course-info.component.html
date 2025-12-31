@@ -1,0 +1,53 @@
+<div class="space-y-4 p-4 border rounded-lg bg-white">
+    <label class="block text-sm font-medium text-gray-700">Course Name <span class="text-red-600">*</span></label>
+    <input [(ngModel)]="course.name" (ngModelChange)="onCourseChange()" placeholder="Course Title"
+        class="w-full rounded-md border border-gray-200 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+    <div *ngIf="showErrors && course && (!course.name || !course.name.trim())" class="text-xs text-red-600">Course name is required</div>
+
+    <label class="block text-sm font-medium text-gray-700">Short Description <span class="text-red-600">*</span></label>
+    <textarea [(ngModel)]="course.description" (ngModelChange)="onCourseChange()" rows="4" placeholder="One paragraph"
+        class="w-full rounded-md border border-gray-200 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+    <div *ngIf="showErrors && course && (!course.description || !course.description.trim())" class="text-xs text-red-600">Short description is required</div>
+
+
+
+    <!-- Course Thumbnail -->
+    <div>
+        <label class="block text-sm font-medium text-gray-700">Course Thumbnail</label>
+        <div class="mt-2">
+            <label class="block w-full cursor-pointer">
+                <div
+                    class="border-2 border-dashed rounded-lg p-4 flex items-center gap-4 hover:border-indigo-400 transition">
+                    <div
+                        class="flex-shrink-0 w-12 h-12 bg-indigo-50 rounded flex items-center justify-center text-indigo-600">
+                        IMG</div>
+                    <div class="flex-1">
+                        <div class="text-sm font-medium">Drag & drop image or click to browse</div>
+                        <div class="text-xs text-gray-500">PNG/JPG up to 5MB recommended size 1280x720</div>
+                    </div>
+                    <input type="file" (change)="onThumbnailChange($event)" accept="image/*" class="hidden" />
+                </div>
+            </label>
+            <div *ngIf="thumbnailPreview" class="mt-3">
+                <span class="text-sm text-gray-600">Preview</span>
+                <img [src]="thumbnailPreview" alt="Thumbnail preview"
+                    class="mt-2 w-full md:w-64 rounded-lg shadow-sm object-cover" />
+            </div>
+            <div *ngIf="showErrors && !thumbnailPreview && course && !(course.thumbnail && course.thumbnail.length)" class="text-xs text-red-600 mt-2">Thumbnail is required</div>
+        </div>
+        <div class="mt-2 flex items-center gap-2">
+            <button (click)="uploadThumbnail()" [disabled]="!thumbnailFile || uploadInProgress || !course?.id"
+                class="px-2 py-1 rounded bg-indigo-600 text-white text-sm">{{ uploadInProgress ? 'Uploading...' :
+                'Upload' }}</button>
+            <div *ngIf="uploadInProgress" class="text-xs text-gray-600">Progress: {{ uploadProgress }}%</div>
+        </div>
+    </div>
+
+    <div class="flex items-center gap-3 justify-end mt-4">
+    <button (click)="attemptSave()" [disabled]="!courseDirty || loading"
+            class="py-2 px-4 rounded bg-indigo-600 text-white shadow hover:bg-indigo-700 transition-all duration-200 transform hover:scale-105 disabled:opacity-50">{{
+            loading ? 'Saving...' :
+            'Save Course' }}</button>
+    <button (click)="attemptContinue()" class="py-2 px-4 rounded border">Continue</button>
+    </div>
+</div>
