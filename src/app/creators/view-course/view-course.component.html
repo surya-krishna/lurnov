@@ -1,7 +1,7 @@
 <div class="min-h-screen bg-gray-50 p-6">
   <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-md p-6 text-gray-800">
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-2xl font-semibold">Edit Course</h2>
+      <h2 class="text-xl font-semibold">Edit Course</h2>
       <div class="text-sm text-gray-600">Units: {{countUnits()}} / {{maxUnits}}</div>
     </div>
 
@@ -21,7 +21,7 @@
             </div>
           </div>
         </div>
-
+<!-- 
         <div class="p-4 border rounded-lg bg-white">
           <div *ngIf="loading" class="flex items-center gap-2 text-sm text-gray-700">Loading... <svg
               class="w-4 h-4 animate-spin" viewBox="0 0 24 24">
@@ -32,7 +32,7 @@
           <div *ngIf="!loading && actionMessage" class="text-sm text-gray-700">{{ actionMessage }}</div>
           <div *ngIf="!loading && !actionMessage" class="text-sm text-gray-500">Progress and server actions show here.
           </div>
-        </div>
+        </div> -->
 
         <!-- ...existing code... -->
 
@@ -52,17 +52,17 @@
           </div>
         </div>
 
-        <!-- Preview Navigation Tree (Only visible in Step 5) -->
-        <div *ngIf="stepEquals(5)" class="p-4 border rounded-lg bg-white text-sm text-gray-600">
+        <!-- Preview Navigation Tree (Only visible in Step 4) -->
+        <div *ngIf="stepEquals(4)" class="p-4 border rounded-lg bg-white text-sm text-gray-600">
           <div class="font-medium mb-2">Contents</div>
           <div class="mb-2">
-            <div class="font-medium text-sm">{{ course.name || 'Untitled course' }}</div>
-            <div class="text-xs text-gray-500">{{ course.description ? (course.description | slice:0:60) : '' }}</div>
+            <div class="font-medium text-xs">{{ course.name || 'Untitled course' }}</div>
+            <div class="text-xs text-gray-500" [title]="course.description">{{ course.description ? (course.description | slice:0:20)+(course.description.length>20?"...":"") : '' }}</div>
           </div>
           <div *ngFor="let book of course.books; let i = index" class="mb-2">
             <div class="flex items-center justify-between cursor-pointer" (click)="toggleBook(i)">
               <div class="flex items-center gap-2">
-                <div class="text-sm font-medium">{{ book.name || 'Untitled Book' }}</div>
+                <div class="text-xs font-medium" [title]="book.name">{{ ((book.name || 'Untitled Book') | slice:0:20)+(book.name&&book.name.length>20?"...":"") }}</div>
                 <div class="text-xs text-gray-400">{{ (book.chapters || []).length }} chapters</div>
               </div>
               <div class="text-indigo-600">{{ book.expanded ? '▾' : '▸' }}</div>
@@ -76,8 +76,8 @@
           </div>
         </div>
 
-        <!-- Test List Sidebar (Only visible in Step 4) -->
-        <div *ngIf="stepEquals(4)" class="p-4 border rounded-lg bg-white text-sm text-gray-600">
+        <!-- Test List Sidebar (Only visible in Step 5) -->
+        <div *ngIf="stepEquals(5)" class="p-4 border rounded-lg bg-white text-sm text-gray-600">
           <div class="flex items-center justify-between mb-4">
             <div class="font-medium">Tests</div>
             <div class="relative">
@@ -130,7 +130,7 @@
         <!-- Stepper -->
         <div class="flex items-center gap-4 mb-2 overflow-x-auto pb-2">
           <ng-container
-            *ngFor="let label of ['Course','Subjects','Chapters','Tests','Preview','Publish']; let idx = index">
+            *ngFor="let label of ['Course','Subjects','Chapters','Preview','Tests','Publish']; let idx = index">
             <div class="flex items-center gap-3 group cursor-pointer" (click)="setStep(idx + 1)">
               <div class="w-9 h-9 flex items-center justify-center rounded-full font-medium transition-all duration-300"
                 [ngClass]="{ 'bg-indigo-600 text-white shadow hover:bg-indigo-700 transition-all duration-200 transform hover:scale-105 shadow-md scale-110': step === (idx+1), 'bg-gray-100 text-gray-700 group-hover:bg-gray-200': step !== (idx+1) }">
@@ -162,13 +162,8 @@
           (validityChange)="onChaptersValidityChange($event)" (uploadChapter)="onChapterFileUpload($event)">
         </app-chapter-manager>
 
-        <!-- Step 4: Tests -->
-        <app-test-manager *ngIf="stepEquals(4)" [courseId]="courseId" [course]="course" [testId]="selectedTestId"
-          [action]="testAction" (saved)="onTestSaved()" (cancelled)="onTestCancelled()">
-        </app-test-manager>
-
-        <!-- Step 5: Preview -->
-        <div *ngIf="stepEquals(5)" class="space-y-4">
+        <!-- Step 4: Preview -->
+        <div *ngIf="stepEquals(4)" class="space-y-4">
           <div class="prose max-w-none">
             <p>Select a chapter from the sidebar to preview its content.</p>
             <!-- Content preview logic with markdown-aware Quill editor -->
@@ -196,6 +191,11 @@
 
           <div class="text-sm text-gray-600">Units: {{countUnits()}} / {{maxUnits}}</div>
         </div>
+
+        <!-- Step 5: Tests -->
+        <app-test-manager *ngIf="stepEquals(5)" [courseId]="courseId" [course]="course" [testId]="selectedTestId"
+          [action]="testAction" (saved)="onTestSaved()" (cancelled)="onTestCancelled()">
+        </app-test-manager>
 
         <!-- Step 6: Publish -->
         <div *ngIf="stepEquals(6)" class="space-y-4">

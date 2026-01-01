@@ -9,7 +9,8 @@
       </div>
 
       <div class="flex items-center justify-between">
-        <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700">Send OTP</button>
+        <button type="submit" [disabled]="isLoading" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md shadow-sm hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">Send OTP</button>
+        <app-loading-spinner [isLoading]="isLoading" [showText]="false" spinnerColor="indigo-600"></app-loading-spinner>
       </div>
     </form>
 

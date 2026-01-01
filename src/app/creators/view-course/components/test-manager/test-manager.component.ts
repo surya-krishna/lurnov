@@ -559,7 +559,13 @@ export class TestManagerComponent implements OnInit, OnChanges {
         });
 
         this.showAutoGenerateModal = false;
+        this.action=null;
         this.toast.success('Test structure generated (draft)');
+    }
+
+    closeAutoGen(){
+        this.showAutoGenerateModal = false;
+        this.cancelled.emit();
     }
 
     // Image Upload
@@ -767,6 +773,7 @@ export class TestManagerComponent implements OnInit, OnChanges {
             next: (res: any) => {
                 this.isGenerating = false;
                 this.showAutoGenerateModal = false;
+                this.action= null;
                 this.showAutoGenSuccessPopup();
             },
             error: (err: any) => {

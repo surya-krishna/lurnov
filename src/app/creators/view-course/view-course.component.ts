@@ -283,7 +283,7 @@ export class ViewCourseComponent implements OnInit, OnDestroy {
       if (this.step === 3 && !this.chaptersValidState) return; // block advancing from Chapters
     }
     this.step = n;
-    if (this.step === 4) {
+    if (this.step === 5) {
       this.loadTests();
     }
   }
@@ -532,7 +532,7 @@ saveSubjects() {
     this.testAction = 'create';
     this.showNewTestOptions = false;
     // ensure TestManager is visible so it picks up the action
-    this.setStep(4);
+    this.setStep(5);
   }
 
   openAutoGenerate() {
@@ -540,7 +540,7 @@ saveSubjects() {
     this.testAction = null;
     this.showNewTestOptions = false;
     // switch to Tests step so TestManagerComponent mounts
-    this.setStep(4);
+    this.setStep(5);
     // set testAction to 'auto' after mount to trigger ngOnChanges
     setTimeout(() => {
       this.testAction = 'auto';
@@ -553,7 +553,7 @@ saveSubjects() {
 
     this.modal.confirm('Delete this test?').then(confirmed => {
       if (confirmed) {
-        this.api.delete(`/creator/v2/courses/${this.courseId}/tests/${test.id}`).subscribe({
+        this.api.delete(`/creator/v2/tests/${test.id}`).subscribe({
           next: () => {
             this.tests.splice(index, 1);
             if (this.selectedTestId === test.id) {
