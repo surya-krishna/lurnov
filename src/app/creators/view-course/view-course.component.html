@@ -165,7 +165,7 @@
         <!-- Step 4: Preview -->
         <div *ngIf="stepEquals(4)" class="space-y-4">
           <div class="prose max-w-none">
-            <p>Select a chapter from the sidebar to preview its content.</p>
+            <p class="text-sm">Select a chapter from the sidebar to preview its content.</p>
             <!-- Content preview logic with markdown-aware Quill editor -->
             <div *ngIf="selectedChapter !== null" class="space-y-3">
               <div class="flex items-center justify-between">
@@ -183,13 +183,13 @@
                 
             </div>
             <div *ngIf="selectedChapter === null">
-              <p class="text-sm text-gray-500">No chapter selected. Choose one from the sidebar to preview and
+              <p class="text-xs text-gray-500">No chapter selected. Choose one from the sidebar to preview and
                 edit.
               </p>
             </div>
           </div>
 
-          <div class="text-sm text-gray-600">Units: {{countUnits()}} / {{maxUnits}}</div>
+          <!-- <div class="text-xs text-gray-600">Units: {{countUnits()}} / {{maxUnits}}</div> -->
         </div>
 
         <!-- Step 5: Tests -->
