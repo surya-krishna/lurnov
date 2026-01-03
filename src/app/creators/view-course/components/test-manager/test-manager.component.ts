@@ -184,7 +184,7 @@ export class TestManagerComponent implements OnInit, OnChanges {
         this.actionMessage = 'Saving test...';
         if (this.currentTest.id) {
             // Update
-            this.api.put(`/creator/v2/courses/${this.courseId}/tests/${this.currentTest.id}`, this.currentTest).subscribe({
+            this.api.put(`/creator/v2/tests/${this.currentTest.id}`, this.currentTest).subscribe({
                 next: (res: any) => {
                     this.finishSaveTest();
                 },
@@ -197,6 +197,7 @@ export class TestManagerComponent implements OnInit, OnChanges {
             // Create
             this.api.post(`/creator/v2/courses/${this.courseId}/tests`, this.currentTest).subscribe({
                 next: (res: any) => {
+                    this.currentTest.id = res.id;
                     this.finishSaveTest();
                 },
                 error: () => {
@@ -213,6 +214,7 @@ export class TestManagerComponent implements OnInit, OnChanges {
         setTimeout(() => {
             this.actionMessage = null;
             this.saved.emit();
+            this.action=null;
         }, 1000);
     }
 

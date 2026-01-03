@@ -99,6 +99,11 @@ export class SubjectManagerComponent {
         if (this.subjectsValid()) this.continue.emit();
     }
 
+    onSaveSuccess() {
+        // Auto-continue after successful save
+        this.continue.emit();
+    }
+
     ngOnChanges(changes: SimpleChanges) {
         try { this.validityChange.emit(this.subjectsValid()); } catch (e) { }
     }

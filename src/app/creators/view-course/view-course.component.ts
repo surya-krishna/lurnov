@@ -312,10 +312,14 @@ export class ViewCourseComponent implements OnInit, OnDestroy {
         this.course = res;
         this.courseDirty = false;
         this.actionMessage = 'Course saved';
+        this.loading=false;
         setTimeout(() => this.actionMessage = null, 2000);
+        // Reload course to ensure sidebar details are updated with latest data
+        setTimeout(() => this.loadCourse(), 500);
       },
       error: () => {
         this.actionMessage = null;
+        this.loading = false;
         this.toast.error('Failed to save course');
       }
     });
@@ -410,7 +414,7 @@ convertQuillHtmlToMarkdown(html: string): string {
 }
 
 
-saveSubjects() {
+  saveSubjects() {
     this.actionMessage = 'Saving subjects...';
     const payload = this.course.subjects.map((s: any) => ({
       id: s.id,
@@ -420,14 +424,11 @@ saveSubjects() {
 
     this.api.post(`/creator/v2/courses/${this.courseId}/books/bulk`, payload).subscribe({
       next: (res: any) => {
-        // res contains { created: [], updated: [] }
-        // We should update our local subjects with IDs from response if needed
-        // For now, reload the course to ensure sync or just trust the reload
-        // But to avoid full reload, let's just notify success
         this.actionMessage = 'Subjects saved';
         setTimeout(() => this.actionMessage = null, 2000);
-        // Ideally we should merge back the IDs but let's reload for safety or just proceed
         this.loadCourse();
+        // Auto-continue to next step after successful save
+        setTimeout(() => this.setStep(3), 1000);
       },
       error: (err: any) => {
         console.error('Failed to save subjects', err);
@@ -435,9 +436,7 @@ saveSubjects() {
         this.toast.error('Failed to save subjects');
       }
     });
-  }
-
-  saveChapters() {
+  }  saveChapters() {
     this.actionMessage = 'Saving chapters...';
     // We need to save chapters for each book.
     // The API is /books/{book_id}/chapters/bulk
@@ -476,6 +475,8 @@ saveSubjects() {
         this.actionMessage = 'Chapters saved';
         setTimeout(() => this.actionMessage = null, 2000);
         this.loadCourse();
+        // Auto-continue to next step after successful save
+        setTimeout(() => this.setStep(4), 1000);
       })
       .catch((err) => {
         console.error('Failed to save chapters', err);

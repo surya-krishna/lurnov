@@ -57,6 +57,7 @@ export class ChapterManagerComponent {
     }
 
     // Validation: subjects must exist and each chapter must have a non-empty title and content (youtube url or file path)
+    // URL is not required if inputType is 'manual'
     chaptersValid(): boolean {
         if (!this.course || !this.course.subjects || !this.course.subjects.length) return false;
         for (const s of this.course.subjects) {
@@ -64,7 +65,8 @@ export class ChapterManagerComponent {
             //if (!s.chapters || !s.chapters.length) return false;
             for (const c of s.chapters) {
                 if (!c.name || !String(c.name).trim().length) return false;
-                if (!c.Url || !String(c.Url).trim().length) return false;
+                // URL is mandatory only for youtube and file types, not for manual
+                if (c.inputType !== 'manual' && (!c.Url || !String(c.Url).trim().length)) return false;
             }
         }
         return true;
@@ -85,6 +87,11 @@ export class ChapterManagerComponent {
         this.showErrors = true;
         this.validityChange.emit(this.chaptersValid());
         if (this.chaptersValid()) this.continue.emit();
+    }
+
+    onSaveSuccess() {
+        // Auto-continue after successful save
+        this.continue.emit();
     }
 
     removeChapter(si: number, ci: number) {

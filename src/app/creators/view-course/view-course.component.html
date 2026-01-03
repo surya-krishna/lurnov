@@ -172,7 +172,7 @@
                 <div class="text-sm text-gray-600">Editing: {{ selectedChapterName }}</div>
                 <div class="flex gap-2">
                   <button
-                    class="py-2 px-4 rounded bg-indigo-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    class="py-2 px-4 rounded bg-indigo-600 text-white shadow hover:bg-indigo-700 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                     (click)="saveChapterContent()" [disabled]="!hasUnsavedChanges">Save Content</button>
                 </div>
               </div>
@@ -206,9 +206,9 @@
             <div class="flex gap-2 mt-4">
               <button class="py-2 px-4 rounded border" (click)="setStep(5)">Back</button>
               <button *ngIf="course.status === 'active'" (click)="unpublish()"
-                class="py-2 px-6 rounded bg-yellow-600 text-white shadow hover:bg-yellow-700">Unpublish</button>
+                class="py-2 px-6 rounded bg-yellow-600 text-white shadow hover:bg-yellow-700 transition-all duration-200 transform hover:scale-105">Unpublish</button>
               <button *ngIf="stepEquals(6) && course.status !== 'active'" (click)="confirmPublish()"
-                class="py-2 px-6 rounded bg-green-600 text-white shadow hover:bg-green-700">Publish Course</button>
+                class="py-2 px-6 rounded bg-indigo-600 text-white shadow hover:bg-indigo-700 transition-all duration-200 transform hover:scale-105">Publish Course</button>
             </div>
           </section>
         </div>
@@ -241,7 +241,7 @@
       <button (click)="showTnCModal = false"
         class="px-4 py-2 rounded border text-gray-600 hover:bg-gray-50 font-medium">Cancel</button>
       <button (click)="proceedToPublish()" [disabled]="!tncAccepted"
-        class="px-6 py-2 rounded bg-indigo-600 text-white shadow hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all">
+        class="px-6 py-2 rounded bg-indigo-600 text-white shadow hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all duration-200 transform hover:scale-105">
         Publish Course
       </button>
     </div>

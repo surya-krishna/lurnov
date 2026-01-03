@@ -1,18 +1,18 @@
 <div class="min-h-screen bg-gray-50 p-6">
   <div class="max-w-6xl mx-auto bg-white rounded-xl shadow-md p-6 text-gray-800">
     <div class="flex items-center justify-between mb-6">
-      <h2 class="text-2xl font-semibold">Create New Course</h2>
+      <h2 class="text-xl font-semibold">Create Course</h2>
       <div class="text-sm text-gray-600">Units: {{countUnits()}} / {{maxUnits}}</div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Left Sidebar (moved before main) -->
-      <aside class="space-y-4 hidden lg:block">
+    <div class="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-6">
+      <!-- Left Sidebar -->
+      <aside class="space-y-4 hidden lg:block min-w-[200px] max-w-[260px]">
         <div class="p-4 border rounded-lg bg-gray-50">
           <div class="flex items-center gap-4">
             <div class="w-20 h-12 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
-              <img *ngIf="courseInfoComponent?.thumbnailPreview" [src]="courseInfoComponent.thumbnailPreview"
-                alt="thumb" class="w-full h-full object-cover" />
+              <img *ngIf="thumbnailPreview" [src]="thumbnailPreview" alt="thumb" class="w-full h-full object-cover" />
+              <div *ngIf="!thumbnailPreview" class="text-xs text-gray-400">No Thumb</div>
             </div>
             <div>
               <div class="font-semibold">{{ course.name || 'Untitled course' }}</div>
@@ -21,7 +21,7 @@
             </div>
           </div>
         </div>
-
+<!-- 
         <div class="p-4 border rounded-lg bg-white">
           <div *ngIf="loading" class="flex items-center gap-2 text-sm text-gray-700">Loading... <svg
               class="w-4 h-4 animate-spin" viewBox="0 0 24 24">
@@ -32,17 +32,52 @@
           <div *ngIf="!loading && actionMessage" class="text-sm text-gray-700">{{ actionMessage }}</div>
           <div *ngIf="!loading && !actionMessage" class="text-sm text-gray-500">Progress and server actions show here.
           </div>
+        </div> -->
+
+        <!-- ...existing code... -->
+
+        <!-- Course Meta Data Main Section -->
+        <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-4 mb-4 flex flex-wrap gap-8 items-center">
+          <div class="flex flex-col items-center">
+            <div class="text-2xl font-bold text-indigo-700">{{ subjectCount }}</div>
+            <div class="text-xs text-gray-600">Subjects</div>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="text-2xl font-bold text-indigo-700">{{ chapterCount }}</div>
+            <div class="text-xs text-gray-600">Chapters</div>
+          </div>
+          <div class="flex flex-col items-center">
+            <div class="text-2xl font-bold text-indigo-700">{{ testCount }}</div>
+            <div class="text-xs text-gray-600">Tests</div>
+          </div>
         </div>
 
-        <div class="p-4 border rounded-lg bg-white text-sm text-gray-600">
-          <div class="font-medium mb-2">Summary</div>
-          <div>Subjects: {{ course.subjects?.length || 0 }}</div>
-          <div>Units: {{ countUnits() }}</div>
-          <div *ngIf="createdCourseId" class="mt-2 text-xs text-green-600">Saved course id: {{ createdCourseId }}</div>
+        <!-- Preview Navigation Tree (Only visible in Step 4) -->
+        <div *ngIf="stepEquals(4)" class="p-4 border rounded-lg bg-white text-sm text-gray-600">
+          <div class="font-medium mb-2">Contents</div>
+          <div class="mb-2">
+            <div class="font-medium text-xs">{{ course.name || 'Untitled course' }}</div>
+            <div class="text-xs text-gray-500" [title]="course.description">{{ course.description ? (course.description | slice:0:20)+(course.description.length>20?"...":"") : '' }}</div>
+          </div>
+          <div *ngFor="let book of course.books; let i = index" class="mb-2">
+            <div class="flex items-center justify-between cursor-pointer" (click)="toggleBook(i)">
+              <div class="flex items-center gap-2">
+                <div class="text-xs font-medium" [title]="book.name">{{ ((book.name || 'Untitled Book') | slice:0:20)+(book.name&&book.name.length>20?"...":"") }}</div>
+                <div class="text-xs text-gray-400">{{ (book.chapters || []).length }} chapters</div>
+              </div>
+              <div class="text-indigo-600">{{ book.expanded ? '▾' : '▸' }}</div>
+            </div>
+            <ul *ngIf="book.expanded" class="mt-2 pl-4 text-sm space-y-1">
+              <li *ngFor="let chapter of book.chapters; let ci = index">
+                <button class="text-left text-indigo-700 text-sm w-full hover:underline"
+                  (click)="selectChapter(i, ci); toggleSidebar()">{{ chapter.Name || 'Untitled Chapter' }}</button>
+              </li>
+            </ul>
+          </div>
         </div>
 
-        <!-- Test List Sidebar (Only visible in Step 4) -->
-        <div *ngIf="step===4" class="p-4 border rounded-lg bg-white text-sm text-gray-600">
+        <!-- Test List Sidebar (Only visible in Step 5) -->
+        <div *ngIf="stepEquals(5)" class="p-4 border rounded-lg bg-white text-sm text-gray-600">
           <div class="flex items-center justify-between mb-4">
             <div class="font-medium">Tests</div>
             <div class="relative">
@@ -90,99 +125,125 @@
         </div>
       </aside>
 
-      <!-- Left: Form -->
-      <div class="lg:col-span-2 space-y-4">
+      <!-- Main Content -->
+      <div class="space-y-4" style="min-width:0;">
         <!-- Stepper -->
-        <div class="flex items-center gap-4 mb-2">
-          <ng-container *ngFor="let label of ['Course','Subjects','Chapters', 'Tests', 'Packages']; let idx = index">
-            <div class="flex items-center gap-3 group cursor-pointer" (click)="setStep(idx+1)">
+        <div class="flex items-center gap-4 mb-2 overflow-x-auto pb-2">
+          <ng-container
+            *ngFor="let label of ['Course','Subjects','Chapters','Preview','Tests','Publish']; let idx = index">
+            <div class="flex items-center gap-3 group cursor-pointer" (click)="setStep(idx + 1)">
               <div class="w-9 h-9 flex items-center justify-center rounded-full font-medium transition-all duration-300"
                 [ngClass]="{ 'bg-indigo-600 text-white shadow hover:bg-indigo-700 transition-all duration-200 transform hover:scale-105 shadow-md scale-110': step === (idx+1), 'bg-gray-100 text-gray-700 group-hover:bg-gray-200': step !== (idx+1) }">
                 {{ idx+1 }}</div>
-              <div class="text-sm font-medium transition-colors duration-300" [class.text-indigo-600]="step === (idx+1)"
-                [class.font-bold]="step === (idx+1)">{{ label }}</div>
+              <div class="text-sm font-medium transition-colors duration-300 whitespace-nowrap"
+                [class.text-indigo-600]="step === (idx+1)" [class.font-bold]="step === (idx+1)">{{ label }}</div>
             </div>
-            <div *ngIf="idx < 4" class="flex-1 h-0.5 bg-gray-200"></div>
+            <div *ngIf="idx < 5" class="flex-1 h-0.5 bg-gray-200 min-w-[20px]"></div>
           </ng-container>
         </div>
 
-        <!-- Course Info -->
-        <div *ngIf="step===1">
-          <app-course-info [course]="course" [loading]="loading" [courseDirty]="courseDirty"
-            (courseChange)="onCourseChange()" (save)="createCourse()" (continue)="createCourse()">
-          </app-course-info>
-        </div>
 
-        <!-- Subjects -->
-        <div *ngIf="step===2">
-          <app-subject-manager [course]="course" [loading]="loading" [courseDirty]="courseDirty"
-            (save)="onSubjectsSave()" (continue)="onSubjectsContinue()" (back)="prevStep()">
-          </app-subject-manager>
-        </div>
+        <!-- Step 1: Course Info -->
+        <app-course-info *ngIf="stepEquals(1)" [course]="course" [loading]="loading" [courseDirty]="courseDirty"
+          [thumbnailPreview]="thumbnailPreview" (courseChange)="onCourseChange()" (save)="isNewCourse ? createNewCourse() : saveCourse()"
+          (continue)="isNewCourse ? createNewCourse() : setStep(2)" (validityChange)="onCourseValidityChange($event)">
+        </app-course-info>
 
-        <!-- Chapters -->
-        <div *ngIf="step===3">
-          <app-chapter-manager [course]="course" [loading]="loading" [courseDirty]="courseDirty"
-            (save)="onChaptersSave()" (continue)="onChaptersContinue()" (back)="prevStep()">
-          </app-chapter-manager>
-        </div>
 
-        <!-- Step 4: Tests -->
-        <div *ngIf="step===4" class="space-y-4 p-4 border rounded-lg bg-white">
-          <h3 class="font-semibold">Tests</h3>
-          <div *ngIf="!createdCourseId" class="text-sm text-red-500">Please save the course first.</div>
+        <!-- Step 2: Subjects -->
+        <app-subject-manager *ngIf="stepEquals(2)" [course]="course" [loading]="loading" [courseDirty]="courseDirty"
+          (courseChange)="onCourseChange()" (save)="saveSubjects()" (back)="setStep(1)" (continue)="setStep(3)"
+          (validityChange)="onSubjectsValidityChange($event)">
+        </app-subject-manager>
 
-          <app-test-manager *ngIf="createdCourseId" [courseId]="createdCourseId" [course]="course"></app-test-manager>
+        <!-- Step 3: Chapters -->
+        <app-chapter-manager *ngIf="stepEquals(3)" [course]="course" [loading]="loading" [courseDirty]="courseDirty"
+          (courseChange)="onCourseChange()" (save)="saveChapters()" (back)="setStep(2)" (continue)="setStep(4)"
+          (validityChange)="onChaptersValidityChange($event)" (uploadChapter)="onChapterFileUpload($event)">
+        </app-chapter-manager>
 
-          <div class="flex justify-end gap-2 mt-4">
-            <button (click)="prevStep()" class="py-2 px-4 rounded border">Back</button>
-            <button (click)="nextStep()"
-              class="py-2 px-6 rounded bg-indigo-600 text-white shadow hover:bg-indigo-700">Continue</button>
+        <!-- Step 4: Preview -->
+        <div *ngIf="stepEquals(4)" class="space-y-4">
+          <div class="prose max-w-none">
+            <p class="text-sm">Select a chapter from the sidebar to preview its content.</p>
+            <!-- Content preview logic with markdown-aware Quill editor -->
+            <div *ngIf="selectedChapter !== null" class="space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-600">Editing: {{ selectedChapterName }}</div>
+                <div class="flex gap-2">
+                  <button
+                    class="py-2 px-4 rounded bg-indigo-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                    (click)="saveChapterContent()" [disabled]="!hasUnsavedChanges">Save Content</button>
+                </div>
+              </div>
+
+              <quill-editor [styles]="{height: '300px'}" [(ngModel)]="editorContentHtml" [modules]="quillModules"
+                (onContentChanged)="onQuillChange($event)" (onEditorCreated)="onEditorCreated($event)"></quill-editor>
+                
+                
+            </div>
+            <div *ngIf="selectedChapter === null">
+              <p class="text-xs text-gray-500">No chapter selected. Choose one from the sidebar to preview and
+                edit.
+              </p>
+            </div>
           </div>
+
+          <!-- <div class="text-xs text-gray-600">Units: {{countUnits()}} / {{maxUnits}}</div> -->
         </div>
 
-        <!-- Step 5: Packages -->
-        <div *ngIf="step===5" class="space-y-4 p-4 border rounded-lg bg-white">
-          <h3 class="font-semibold">Packages</h3>
-          <div *ngIf="!createdCourseId" class="text-sm text-red-500">Please save the course first.</div>
+        <!-- Step 5: Tests -->
+        <app-test-manager *ngIf="stepEquals(5)" [courseId]="courseId" [course]="course" [testId]="selectedTestId"
+          [action]="testAction" (saved)="onTestSaved()" (cancelled)="onTestCancelled()">
+        </app-test-manager>
 
-          <app-package-manager *ngIf="createdCourseId" [course]="course"></app-package-manager>
-
-          <div class="flex justify-end gap-2 mt-4">
-            <button (click)="prevStep()" class="py-2 px-4 rounded border">Back</button>
-            <button (click)="submitAll()"
-              class="py-2 px-6 rounded bg-green-600 text-white shadow hover:bg-green-700">Finish</button>
-          </div>
+        <!-- Step 6: Publish -->
+        <div *ngIf="stepEquals(6)" class="space-y-4">
+          <section class="mt-8" id="publish-section">
+            <h2 class="text-xl font-semibold mb-4">Publish</h2>
+            <app-package-manager [packages]="packages" [course]="course"
+              (packagesChange)="packages = $event"></app-package-manager>
+            <div class="flex gap-2 mt-4">
+              <button class="py-2 px-4 rounded border" (click)="setStep(5)">Back</button>
+              <button *ngIf="course.status === 'active'" (click)="unpublish()"
+                class="py-2 px-6 rounded bg-yellow-600 text-white shadow hover:bg-yellow-700">Unpublish</button>
+              <button *ngIf="stepEquals(6) && course.status !== 'active'" (click)="confirmPublish()"
+                class="py-2 px-6 rounded bg-green-600 text-white shadow hover:bg-green-700">Publish Course</button>
+            </div>
+          </section>
         </div>
 
+        <!-- ...existing code for main content (stepper, steps, etc.)... -->
       </div>
+    </div>
+  </div>
+</div>
 
-      <!-- Mobile sidebar drawer -->
-      <div *ngIf="showSidebar" class="fixed inset-0 z-50 lg:hidden">
-        <div class="absolute inset-0 bg-black opacity-40" (click)="toggleSidebar()"></div>
-        <div class="absolute inset-y-0 left-0 w-72 bg-white p-4 overflow-auto shadow-lg">
-          <div class="flex items-center justify-between mb-4">
-            <div class="font-semibold">Course</div>
-            <button class="px-2 py-1 border rounded" (click)="toggleSidebar()">Close</button>
-          </div>
-          <div class="space-y-4">
-            <div class="p-2 border rounded bg-gray-50">
-              <div class="font-semibold">{{ course.name || 'Untitled course' }}</div>
-              <div class="text-sm text-gray-500">{{ course.description ? (course.description | slice:0:80) +
-                (course.description.length>80? '...':'') : 'Add a short description' }}</div>
-            </div>
-            <div class="p-2 border rounded bg-white">
-              <div *ngIf="actionMessage" class="text-sm text-gray-700">{{ actionMessage }}</div>
-              <div *ngIf="!actionMessage" class="text-sm text-gray-500">Progress and server actions show here.</div>
-            </div>
-            <div class="p-2 border rounded bg-white text-sm text-gray-600">
-              <div class="font-medium mb-2">Summary</div>
-              <div>Subjects: {{ course.subjects?.length || 0 }}</div>
-              <div>Units: {{ countUnits() }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
+<!-- T&C Modal -->
+<div *ngIf="showTnCModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black bg-opacity-50">
+  <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 max-h-[90vh] flex flex-col">
+    <h3 class="text-xl font-bold mb-4 text-gray-800">Terms and Conditions</h3>
+
+    <div
+      class="flex-1 overflow-y-auto border rounded p-4 bg-gray-50 mb-4 text-sm text-gray-700 whitespace-pre-wrap leading-relaxed h-96">
+      {{ tncText }}
+    </div>
+
+    <div class="flex items-center gap-3 mb-6 p-3 bg-indigo-50 rounded border border-indigo-100">
+      <input type="checkbox" id="acceptTnC" [(ngModel)]="tncAccepted"
+        class="h-5 w-5 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer">
+      <label for="acceptTnC" class="text-sm font-medium text-gray-700 cursor-pointer select-none">
+        I have read and agree to the Terms and Conditions.
+      </label>
+    </div>
+
+    <div class="flex justify-end gap-3">
+      <button (click)="showTnCModal = false"
+        class="px-4 py-2 rounded border text-gray-600 hover:bg-gray-50 font-medium">Cancel</button>
+      <button (click)="proceedToPublish()" [disabled]="!tncAccepted"
+        class="px-6 py-2 rounded bg-indigo-600 text-white shadow hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all">
+        Publish Course
+      </button>
     </div>
   </div>
 </div>

@@ -38,7 +38,7 @@
                 class="py-2 px-6 rounded bg-indigo-600 text-white shadow hover:bg-indigo-700 transition-all duration-200 transform hover:scale-105"
                 (click)="attemptSave()"
                 [disabled]="loading">{{ loading
-                ? 'Saving...' : 'Save' }}</button>
+                ? 'Saving...' : 'Save Subjects' }}</button>
             <button *ngIf="!sectionHasChanges()" (click)="attemptContinue()"
                 class="py-2 px-6 rounded border ml-2">Continue</button>
         </div>

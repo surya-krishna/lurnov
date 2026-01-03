@@ -1,13 +1,15 @@
 import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ApiService } from '../../../../api-service';
 import { ToastService } from '../../../../toast.service';
+import { DeleteCourseModalComponent } from './delete-course-modal.component';
 
 @Component({
     selector: 'app-course-info',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, DeleteCourseModalComponent],
     templateUrl: './course-info.component.html'
 })
 export class CourseInfoComponent {
@@ -25,11 +27,14 @@ export class CourseInfoComponent {
     uploadInProgress: boolean = false;
     uploadProgress: number = 0;
     showErrors: boolean = false;
+    showDeleteModal: boolean = false;
+    isDeleting: boolean = false;
     
 
     constructor(
         private api: ApiService,
-        private toast: ToastService
+        private toast: ToastService,
+        private router: Router
     ) { }
 
     onCourseChange() {
@@ -49,8 +54,8 @@ export class CourseInfoComponent {
     attemptSave() {
         this.showErrors = true;
         this.validityChange.emit(this.isValidCourse());
-        if (this.isValidCourse() && !this.loading && this.courseDirty) {
-            this.saveCourse();
+        if (this.isValidCourse() && !this.loading) {
+            this.saveCourseWithThumbnail();
         }
     }
 
@@ -60,6 +65,41 @@ export class CourseInfoComponent {
         if (this.isValidCourse()) {
             this.continue.emit();
         }
+    }
+
+    saveCourseWithThumbnail() {
+        this.loading = true;
+        
+        // Step 1: Upload thumbnail if available
+        if (this.thumbnailFile && this.course.id) {
+            this.uploadThumbnailAndSaveCourse();
+        } else {
+            // No thumbnail to upload, just save course
+            this.saveCourse();
+        }
+    }
+
+    uploadThumbnailAndSaveCourse() {
+        if (!this.course.id || !this.thumbnailFile) {
+            this.saveCourse();
+            return;
+        }
+
+        const fd = new FormData();
+        fd.append('thumbnail', this.thumbnailFile);
+        this.api.postMultipart(`/creator/v2/courses/${this.course.id}/thumbnail`, fd).subscribe({
+            next: (res: any) => {
+                // Update course with thumbnail path
+                this.course.thumbnail_url = res.path;
+                this.thumbnailFile = null; // Clear after upload
+                // Now save the course
+                this.saveCourse();
+            },
+            error: () => {
+                this.loading = false;
+                this.toast.error('Thumbnail upload failed');
+            }
+        });
     }
 
     recalcPrice() {
@@ -88,26 +128,41 @@ export class CourseInfoComponent {
         try { this.validityChange.emit(this.isValidCourse()); } catch (e) {}
     }
 
-    uploadThumbnail() {
-        if (!this.course.id || !this.thumbnailFile) return;
-        this.uploadInProgress = true;
-        const fd = new FormData();
-        fd.append('thumbnail', this.thumbnailFile);
-        this.api.postMultipart(`/creator/v2/courses/${this.course.id}/thumbnail`, fd).subscribe({
-            next: (res: any) => {
-                this.course.thumbnail_url=res.path;
-                this.uploadInProgress = false;
-                this.toast.success('Thumbnail uploaded');
-                // Assuming API returns the new thumbnail URL or we just keep the local preview
-            },
-            error: () => {
-                this.uploadInProgress = false;
-                this.toast.error('Upload failed');
-            }
-        });
-    }
-
     saveCourse() {
         this.save.emit();
+    }
+
+    openDeleteModal() {
+        this.showDeleteModal = true;
+    }
+
+    closeDeleteModal() {
+        this.showDeleteModal = false;
+    }
+
+    deleteCourse() {
+        if (!this.course || !this.course.id) {
+            this.toast.error('Invalid course');
+            return;
+        }
+
+        this.isDeleting = true;
+        const courseId = this.course.id;
+        
+        this.api.delete(`/creator/v2/courses/${courseId}`).subscribe({
+            next: () => {
+                this.isDeleting = false;
+                this.showDeleteModal = false;
+                this.toast.success('Course deleted successfully');
+                // Navigate back to creator dashboard after deletion
+                setTimeout(() => {
+                    this.router.navigate(['/creator/dashboard']);
+                }, 1000);
+            },
+            error: (err) => {
+                this.isDeleting = false;
+                this.toast.error(err.message || 'Failed to delete course');
+            }
+        });
     }
 }
