@@ -47,8 +47,9 @@ export class CourseInfoComponent {
         if (!this.course) return false;
         const nameOk = !!(this.course.name && String(this.course.name).trim().length);
         const descOk = !!(this.course.description && String(this.course.description).trim().length);
+        const skillLevelOk = !!(this.course.skillLevel && String(this.course.skillLevel).trim().length);
         const thumbOk = !!(this.thumbnailPreview || (this.course.thumbnail && this.course.thumbnail.length));
-        return nameOk && descOk && thumbOk;
+        return nameOk && descOk && skillLevelOk && thumbOk;
     }
 
     attemptSave() {

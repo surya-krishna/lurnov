@@ -23,7 +23,15 @@
         class="w-full rounded-md border border-gray-200 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
     <div *ngIf="showErrors && course && (!course.description || !course.description.trim())" class="text-xs text-red-600">Short description is required</div>
 
-
+    <label class="block text-sm font-medium text-gray-700">Target Skill Level <span class="text-red-600">*</span></label>
+    <select [(ngModel)]="course.skillLevel" (ngModelChange)="onCourseChange()"
+        class="w-full rounded-md border border-gray-200 px-3 py-2 text-gray-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <option value="" disabled selected>Select skill level</option>
+        <option value="Beginner">Beginner - No prior knowledge required</option>
+        <option value="Intermediate">Intermediate - Some foundational knowledge expected</option>
+        <option value="Expert">Expert - Advanced knowledge required</option>
+    </select>
+    <div *ngIf="showErrors && course && (!course.skillLevel || !course.skillLevel.trim())" class="text-xs text-red-600">Target skill level is required</div>
 
     <!-- Course Thumbnail -->
     <div>
