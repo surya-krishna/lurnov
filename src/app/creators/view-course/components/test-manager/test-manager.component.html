@@ -165,6 +165,69 @@
             </div>
 
             <div class="p-4 space-y-4 bg-white">
+                <!-- Passage Manager Section -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <div class="flex items-center justify-between mb-3">
+                        <h4 class="font-semibold text-gray-700 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/>
+                                <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H3a1 1 0 00-1 1v12a1 1 0 001 1h14a1 1 0 001-1V6a1 1 0 00-1-1h-3a1 1 0 000-2h2a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm2.5 7a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"/>
+                            </svg>
+                            Passages in this Section
+                        </h4>
+                        <button (click)="openPassageModal(si)"
+                            class="text-xs px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Add Passage
+                        </button>
+                    </div>
+
+                    <!-- Passages List -->
+                    <div *ngIf="getPassagesInSection(si).length > 0" class="space-y-2">
+                        <div *ngFor="let passage of getPassagesInSection(si)" 
+                            class="bg-white p-3 rounded border border-blue-100 hover:border-blue-300 transition">
+                            
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="flex-1 min-w-0">
+                                    <h5 class="font-medium text-gray-700 text-sm">Passage {{passage.passageId}}</h5>
+                                    <p class="text-xs text-gray-600 mt-1 line-clamp-2">{{passage.content}}</p>
+                                    <div *ngIf="passage.sourceAttribution" class="text-xs text-gray-500 mt-1">
+                                        <strong>Source:</strong> {{passage.sourceAttribution}}
+                                    </div>
+                                </div>
+                                
+                                <div class="flex gap-2 flex-shrink-0">
+                                    <button (click)="openPassageModal(si, passage)"
+                                        class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Edit</button>
+                                    <button (click)="deletePassage(si, passage.passageId)"
+                                        class="text-xs text-red-600 hover:text-red-800 font-medium">Delete</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Questions linked to this passage -->
+                            <div class="mt-2 text-xs text-gray-500">
+                                <strong>Questions:</strong>
+                                <span *ngIf="getQuestionsForPassage(si, passage.passageId).length > 0" 
+                                    class="text-blue-600">
+                                    {{getQuestionsForPassage(si, passage.passageId).length}} question(s)
+                                </span>
+                                <span *ngIf="getQuestionsForPassage(si, passage.passageId).length === 0" 
+                                    class="text-orange-600">
+                                    No questions yet
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div *ngIf="getPassagesInSection(si).length === 0" 
+                        class="text-center text-xs text-gray-500 py-2">
+                        No passages added yet
+                    </div>
+                </div>
+
                 <!-- Section Marking Settings -->
                 <div class="flex flex-wrap items-center gap-6 p-3 bg-indigo-50 rounded-md border border-indigo-100">
                     <div class="flex items-center gap-2">
@@ -214,6 +277,54 @@
                                                 class="w-full rounded-md border border-gray-200 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"></textarea>
 
                                         </div>
+
+                                        <!-- Passage Type: Require Passage Selection -->
+                                        <div *ngIf="q.type === 'Passage'" class="space-y-2 bg-blue-50 p-3 rounded border border-blue-100">
+                                            
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                                    Select Passage <span class="text-red-600">*</span>
+                                                </label>
+                                                <select [(ngModel)]="q.passageId"
+                                                    class="w-full rounded border border-gray-200 px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500">
+                                                    <option [value]="null">-- Select a Passage --</option>
+                                                    <option *ngFor="let p of getPassagesInSection(si)" [value]="p.passageId">
+                                                        {{p.passageId}} - {{p.content | slice:0:40}}...
+                                                    </option>
+                                                </select>
+                                                <div *ngIf="showManualErrors && !q.passageId" 
+                                                    class="text-xs text-red-600 mt-1">
+                                                    Passage is required for Passage-type questions
+                                                </div>
+                                            </div>
+
+                                            <!-- Show selected passage preview -->
+                                            <div *ngIf="q.passageId && getPassageById(si, q.passageId) as passage">
+                                                <div class="bg-white p-2 rounded text-xs border-l-4 border-blue-600">
+                                                    <p class="font-medium text-gray-700 mb-1">Passage:</p>
+                                                    <p class="text-gray-600 line-clamp-3">{{passage.content}}</p>
+                                                    <div *ngIf="passage.sourceAttribution" class="text-gray-500 text-xs mt-1">
+                                                        {{passage.sourceAttribution}}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                                    Question Sub-Type <span class="text-red-600">*</span>
+                                                </label>
+                                                <select [(ngModel)]="q.questionSubType"
+                                                    class="w-full rounded border border-gray-200 px-2 py-1 text-sm focus:ring-2 focus:ring-indigo-500">
+                                                    <option [value]="null">-- Select sub-type --</option>
+                                                    <option value="MCQ">Multiple Choice</option>
+                                                    <option value="MSQ">Multiple Select</option>
+                                                    <option value="True/False">True/False</option>
+                                                    <option value="Descriptive">Descriptive</option>
+                                                    <option value="Fill-in-the-Blanks">Fill-in-the-Blanks</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
                                         <!-- Image Illustration Controls -->
                                         <div class="flex items-center gap-2 mt-2">
                                             <button *ngIf="!q.image" (click)="triggerImageUpload(q)"
@@ -285,7 +396,7 @@
                                     </div>
                                 </div>
                                 <!-- Question Body based on Type -->
-                                <div class="space-y-2 pl-1" [ngSwitch]="q.type">
+                                <div class="space-y-2 pl-1" [ngSwitch]="q.type === 'Passage' ? q.questionSubType : q.type">
 
                                     <!-- MCQ & True/False -->
                                     <ng-container *ngSwitchCase="'MCQ'">
@@ -653,5 +764,66 @@
                     </path>
                 </svg>
             </button>
+        </div>
+    </div>
+
+    <!-- Passage Modal -->
+    <div *ngIf="showPassageModal && editingPassageSectionIndex >= 0"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-xl font-semibold">
+                    {{editingPassage?.passageId ? 'Edit Passage' : 'Add New Passage'}}
+                </h3>
+                <button (click)="closePassageModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Passage Content (Required) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Passage Content <span class="text-red-600">*</span>
+                    </label>
+                    <textarea 
+                        [(ngModel)]="editingPassage.content"
+                        class="w-full h-32 rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="Enter the passage text here..."
+                        maxlength="10000">
+                    </textarea>
+                    <p class="text-xs text-gray-500 mt-1">
+                        {{editingPassage?.content?.length || 0}}/10000 characters
+                    </p>
+                </div>
+
+                <!-- Source Attribution (Optional) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Source Attribution
+                    </label>
+                    <input 
+                        type="text"
+                        [(ngModel)]="editingPassage.sourceAttribution"
+                        class="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="e.g., Historical Records, 1820">
+                    <p class="text-xs text-gray-500 mt-1">
+                        Optional: Include the source or attribution for this passage
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-6 pt-4 border-t">
+                <button (click)="closePassageModal()"
+                    class="px-4 py-2 rounded border text-gray-600 hover:bg-gray-50">
+                    Cancel
+                </button>
+                <button (click)="savePassage()"
+                    class="px-6 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700 font-medium">
+                    {{editingPassage?.passageId ? 'Update' : 'Create'}} Passage
+                </button>
+            </div>
         </div>
     </div>

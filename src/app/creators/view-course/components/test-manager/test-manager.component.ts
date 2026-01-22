@@ -42,7 +42,7 @@ export class TestManagerComponent implements OnInit, OnChanges {
     actionMessage: string | null = null;
 
     testTypes = ['CHAPTER', 'OVERALL'];
-    questionTypes = ['MCQ', 'MSQ', 'True/False', 'Descriptive', 'Fill-in-the-Blanks', 'Matching', 'Sequence'];
+    questionTypes = ['MCQ', 'MSQ', 'True/False', 'Descriptive', 'Fill-in-the-Blanks', 'Matching', 'Sequence', 'Passage'];
     scoringFormulas = ['Raw Score', 'Percentile (JEE/NEET)', 'Scaled Score (CAT)', 'Custom'];
     difficultyOptions:number[] = [];
     previewImageUrl: string | null = null;
@@ -57,6 +57,11 @@ export class TestManagerComponent implements OnInit, OnChanges {
 
     // For OVERALL tests allow selecting subjects at test level
     // currentTest.selectedSubjects: string[] expected
+
+    // Passage Management
+    showPassageModal: boolean = false;
+    editingPassage: any = null;
+    editingPassageSectionIndex: number = -1;
 
     constructor(
         private api: ApiService,
@@ -130,6 +135,7 @@ export class TestManagerComponent implements OnInit, OnChanges {
             sections: [{
                 name: 'Section 1',
                 questions: [],
+                passages: [],
                 useUniformMarking: false,
                 uniformMarksPos: 1,
                 uniformMarksNeg: 0,
@@ -156,6 +162,7 @@ export class TestManagerComponent implements OnInit, OnChanges {
                     if (s.timeLimit === undefined) s.timeLimit = 0;
                     if (!s.selectedChapters) s.selectedChapters = [];
                     if (!s.questions) s.questions = [];
+                    if (!s.passages) s.passages = [];
                     // Ensure each question has chapterId field
                     s.questions.forEach((q: any) => {
                         if (q.chapterId === undefined) {
@@ -235,6 +242,7 @@ export class TestManagerComponent implements OnInit, OnChanges {
         this.currentTest.sections.push({
             name: `Section ${this.currentTest.sections.length + 1}`,
             questions: [],
+            passages: [],
             useUniformMarking: false,
             uniformMarksPos: 1,
             uniformMarksNeg: 0,
@@ -284,7 +292,9 @@ export class TestManagerComponent implements OnInit, OnChanges {
             correctAnswer: '',
             explanation: '',
             image: null,
-            chapterId: defaultChapterId
+            chapterId: defaultChapterId,
+            passageId: null,
+            questionSubType: null
         };
         section.questions.push(question);
     }
@@ -327,11 +337,14 @@ export class TestManagerComponent implements OnInit, OnChanges {
     }
 
     setCorrectOption(question: any, optionIndex: number) {
-        if (question.type === 'MCQ' || question.type === 'True/False') {
+        // Get the effective question type (for Passage questions, use the subtype)
+        const questionType = question.type === 'Passage' ? question.questionSubType : question.type;
+        
+        if (questionType === 'MCQ' || questionType === 'True/False') {
             question.options.forEach((opt: any, index: number) => {
                 opt.isCorrect = index === optionIndex;
             });
-        } else if (question.type === 'MSQ') {
+        } else if (questionType === 'MSQ') {
             question.options[optionIndex].isCorrect = !question.options[optionIndex].isCorrect;
         }
     }
@@ -672,6 +685,132 @@ export class TestManagerComponent implements OnInit, OnChanges {
         this.previewImageUrl = null;
     }
 
+    // Passage Management Methods
+    openPassageModal(sectionIndex: number, passage?: any): void {
+        if (sectionIndex < 0 || sectionIndex >= this.currentTest.sections.length) return;
+        
+        this.editingPassageSectionIndex = sectionIndex;
+        if (passage) {
+            this.editingPassage = { ...passage };
+        } else {
+            // Generate new passage ID
+            const sectionPassages = this.getPassagesInSection(sectionIndex);
+            const passageNum = sectionPassages.length + 1;
+            this.editingPassage = {
+                passageId: `passage_${passageNum}`,
+                content: '',
+                sourceAttribution: '',
+                images: []
+            };
+        }
+        this.showPassageModal = true;
+    }
+
+    closePassageModal(): void {
+        this.showPassageModal = false;
+        this.editingPassage = null;
+        this.editingPassageSectionIndex = -1;
+    }
+
+    savePassage(): void {
+        if (!this.editingPassage?.content?.trim()) {
+            this.toast.error('Passage content is required');
+            return;
+        }
+        
+        if (this.editingPassageSectionIndex < 0) return;
+        
+        const section = this.currentTest.sections[this.editingPassageSectionIndex];
+        if (!section.passages) section.passages = [];
+        
+        const existingIndex = section.passages.findIndex(
+            (p:any) => p.passageId === this.editingPassage.passageId
+        );
+        
+        if (existingIndex >= 0) {
+            // Update
+            section.passages[existingIndex] = { ...this.editingPassage };
+        } else {
+            // Create new
+            section.passages.push({ ...this.editingPassage });
+        }
+        
+        this.closePassageModal();
+        this.toast.success('Passage saved');
+    }
+
+    deletePassage(sectionIndex: number, passageId: string): void {
+        if (sectionIndex < 0) return;
+        
+        const section = this.currentTest.sections[sectionIndex];
+        if (!section.passages) return;
+        
+        // Check if passage has questions
+        const hasQuestions = section.questions.some((q:any) => q.passageId === passageId);
+        if (hasQuestions) {
+            this.modal.confirm(
+                'This passage has questions linked to it. Delete them first?'
+            ).then(confirmed => {
+                if (confirmed) {
+                    // Remove all questions for this passage
+                    section.questions = section.questions.filter((q:any) => q.passageId !== passageId);
+                    // Remove passage
+                    section.passages = section.passages.filter((p:any) => p.passageId !== passageId);
+                    this.toast.success('Passage and related questions deleted');
+                }
+            });
+        } else {
+            section.passages = section.passages.filter((p:any) => p.passageId !== passageId);
+            this.toast.success('Passage deleted');
+        }
+    }
+
+    getPassagesInSection(sectionIndex: number): any[] {
+        if (!this.currentTest?.sections?.[sectionIndex]) return [];
+        return this.currentTest.sections[sectionIndex].passages || [];
+    }
+
+    getPassageById(sectionIndex: number, passageId: string): any {
+        return this.getPassagesInSection(sectionIndex).find(p => p.passageId === passageId);
+    }
+
+    getQuestionsForPassage(sectionIndex: number, passageId: string): any[] {
+        if (!this.currentTest?.sections?.[sectionIndex]) return [];
+        return this.currentTest.sections[sectionIndex].questions.filter(
+            (q:any) => q.passageId === passageId
+        );
+    }
+
+    triggerPassageImageUpload(): void {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.onchange = (e) => this.uploadPassageImage(e);
+        fileInput.click();
+    }
+
+    uploadPassageImage(event: any): void {
+        const file = event.target.files[0];
+        if (!file || !this.editingPassage) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        this.actionMessage = 'Uploading image...';
+        this.api.postMultipart<{ path: string }>(`/creator/v2/courses/${this.courseId}/upload-image`, formData).subscribe({
+            next: (res) => {
+                if (!this.editingPassage.images) this.editingPassage.images = [];
+                this.editingPassage.images.push(res.path);
+                this.actionMessage = 'Image uploaded';
+                setTimeout(() => this.actionMessage = null, 2000);
+            },
+            error: () => {
+                this.toast.error('Failed to upload image');
+                this.actionMessage = null;
+            }
+        });
+    }
+
     // Validation for manual create/edit test
     manualTestValid(): boolean {
         const t = this.currentTest;
@@ -708,6 +847,14 @@ export class TestManagerComponent implements OnInit, OnChanges {
         if (!q) return 'Question missing';
         if (!q.type) return 'Question type is required';
         if (!q.text || !String(q.text).trim().length) return 'Question text is required';
+
+        // Passage type validation
+        if (q.type === 'Passage') {
+            if (!q.passageId) return 'Passage is required for Passage-type questions';
+            if (!q.questionSubType) return 'Question sub-type is required for Passage questions';
+            // Validate based on sub-type
+            return this.validatePassageQuestionSubType(q);
+        }
 
         const nonEmptyOptions = (q.options || []).filter((o: any) => o.text && String(o.text).trim().length);
 
@@ -746,6 +893,39 @@ export class TestManagerComponent implements OnInit, OnChanges {
                 for (const it of q.sequenceItems) {
                     if (!it.text || !String(it.text).trim().length) return 'Sequence items cannot be empty';
                 }
+                return null;
+            default:
+                return null;
+        }
+    }
+
+    // Helper method to validate passage question subtypes
+    private validatePassageQuestionSubType(q: any): string | null {
+        const subType = q.questionSubType;
+        const nonEmptyOptions = (q.options || []).filter((o: any) => o.text && String(o.text).trim().length);
+
+        switch (subType) {
+            case 'MCQ':
+                if (!q.options || q.options.length < 2) return 'At least two options required for MCQ';
+                if (nonEmptyOptions.length < 2) return 'At least two non-empty options required for MCQ';
+                if (!q.options.some((o: any) => o.isCorrect)) return 'One option must be selected as correct for MCQ';
+                return null;
+            case 'MSQ':
+                if (!q.options || q.options.length < 2) return 'At least two options required for MSQ';
+                if (nonEmptyOptions.length < 2) return 'At least two non-empty options required for MSQ';
+                if (!q.options.some((o: any) => o.isCorrect)) return 'At least one option must be selected for MSQ';
+                return null;
+            case 'Descriptive':
+                if (!q.correctAnswer || !String(q.correctAnswer).trim().length) return 'Model answer is required for Descriptive questions';
+                return null;
+            case 'True/False':
+                if (!q.options || q.options.length < 2) return 'True/False must have two options';
+                const texts = q.options.map((o: any) => (o.text || '').toString().toLowerCase());
+                if (!(texts.includes('true') && texts.includes('false'))) return 'Options must include True and False';
+                if (!q.options.some((o: any) => o.isCorrect)) return 'Select the correct option for True/False';
+                return null;
+            case 'Fill-in-the-Blanks':
+                if (!q.correctAnswer || !String(q.correctAnswer).trim().length) return 'Correct answer is required for Fill-in-the-Blanks';
                 return null;
             default:
                 return null;
