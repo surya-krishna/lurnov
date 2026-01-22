@@ -56,8 +56,8 @@ export class ChapterManagerComponent {
         this.onChapterChange(si, ci);
     }
 
-    // Validation: subjects must exist and each chapter must have a non-empty title and content (youtube url or file path)
-    // URL is not required if inputType is 'manual'
+    // Validation: subjects must exist and each chapter must have a non-empty title
+    // URL is not required if inputType is 'manual' - content will be added in next step
     chaptersValid(): boolean {
         if (!this.course || !this.course.subjects || !this.course.subjects.length) return false;
         for (const s of this.course.subjects) {

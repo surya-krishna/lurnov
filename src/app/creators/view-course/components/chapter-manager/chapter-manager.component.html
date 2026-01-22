@@ -23,7 +23,7 @@
                             class="rounded-md border border-gray-200 px-2 py-2 text-sm">
                             <option value="youtube">YouTube</option>
                             <option value="file">File Upload</option>
-                            <!-- <option value="manual">Manual</option> -->
+                            <option value="manual">Manual</option>
                         </select>
 
                         <button (click)="removeChapter(si, ci)" title="Delete chapter" aria-label="Delete chapter"
@@ -74,9 +74,7 @@
 
                     <div *ngIf="showErrors" class="flex flex-col">
                         <div *ngIf="!c.name || !c.name.trim()" class="text-xs text-red-600">Chapter title required</div>
-                        <div *ngIf="c.inputType !== 'manual' && (!c.Url || !c.Url.trim())" class="text-xs text-red-600">Content (YouTube URL or File)
-                            required
-                        </div>
+                        <div *ngIf="c.inputType !== 'manual' && (!c.Url || !c.Url.trim())" class="text-xs text-red-600">Content (YouTube URL or File) required</div>
                     </div>
                 </div>
                 <div class="mt-2">

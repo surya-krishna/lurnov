@@ -244,6 +244,17 @@
                                                     Image</button>
                                             </div>
                                         </div>
+                                        <!-- Chapter Selection Dropdown -->
+                                        <div class="mt-3 flex items-center gap-2">
+                                            <label class="text-xs text-gray-600 font-medium whitespace-nowrap">Chapter:</label>
+                                            <select [(ngModel)]="q.chapterId"
+                                                class="flex-1 rounded border border-gray-200 px-2 py-1 text-xs focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                                                <option [value]="null">-- Select chapter to which this question belongs --</option>
+                                                <option *ngFor="let ch of getChaptersForQuestion()" [value]="ch.id">
+                                                    {{ch.subject}} - {{ch.name}}
+                                                </option>
+                                            </select>
+                                        </div>
                                     </div>
 
                                     <!-- Question Individual Marks -->
@@ -286,8 +297,13 @@
                                             <input [(ngModel)]="opt.text" placeholder="Option {{oi + 1}}"
                                                 class="flex-1 rounded border border-gray-200 px-2 py-1 text-sm focus:border-indigo-500">
                                             <button (click)="removeOption(q, oi)" [disabled]="q.options.length <= 2"
-                                                class="text-gray-400 hover:text-red-500 px-1"
-                                                [title]="q.options.length <= 2 ? 'At least two options required' : 'Remove option'">Remove</button>
+                                                class="text-gray-400 hover:text-red-500 p-1 transition-colors"
+                                                [title]="q.options.length <= 2 ? 'At least two options required' : 'Delete option'">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
                                         </div>
                                         <button (click)="addOption(q)"
                                             class="text-xs text-indigo-600 font-medium hover:text-indigo-800">+ Add
@@ -314,8 +330,13 @@
                                             <input [(ngModel)]="opt.text" placeholder="Option {{oi + 1}}"
                                                 class="flex-1 rounded border border-gray-200 px-2 py-1 text-sm focus:border-indigo-500">
                                             <button (click)="removeOption(q, oi)" [disabled]="q.options.length <= 2"
-                                                class="text-gray-400 hover:text-red-500 px-1"
-                                                [title]="q.options.length <= 2 ? 'At least two options required' : 'Remove option'">×</button>
+                                                class="text-gray-400 hover:text-red-500 p-1 transition-colors"
+                                                [title]="q.options.length <= 2 ? 'At least two options required' : 'Delete option'">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
                                         </div>
                                         <button (click)="addOption(q)"
                                             class="text-xs text-indigo-600 font-medium hover:text-indigo-800">+ Add

@@ -156,6 +156,12 @@ export class TestManagerComponent implements OnInit, OnChanges {
                     if (s.timeLimit === undefined) s.timeLimit = 0;
                     if (!s.selectedChapters) s.selectedChapters = [];
                     if (!s.questions) s.questions = [];
+                    // Ensure each question has chapterId field
+                    s.questions.forEach((q: any) => {
+                        if (q.chapterId === undefined) {
+                            q.chapterId = null;
+                        }
+                    });
                 });
 
                 // Set selectedSubject based on chapterId for CHAPTER type tests
@@ -259,6 +265,13 @@ export class TestManagerComponent implements OnInit, OnChanges {
     addQuestion(sectionIndex: number) {
         if (!this.currentTest) return;
         const section = this.currentTest.sections[sectionIndex];
+        
+        // For CHAPTER type tests, auto-select the test's chapter
+        let defaultChapterId: any = null;
+        if (this.currentTest.type === 'CHAPTER' && this.currentTest.chapterId) {
+            defaultChapterId = this.currentTest.chapterId;
+        }
+        
         const question: any = {
             type: 'MCQ',
             text: '',
@@ -270,7 +283,8 @@ export class TestManagerComponent implements OnInit, OnChanges {
             blanks: [],
             correctAnswer: '',
             explanation: '',
-            image: null
+            image: null,
+            chapterId: defaultChapterId
         };
         section.questions.push(question);
     }
@@ -462,6 +476,25 @@ export class TestManagerComponent implements OnInit, OnChanges {
     // No-op: per-chapter distribution removed for simplicity
     ensureChapterDistribution(secCfg: any) {}
 
+    // Get available chapters for a question based on test type
+    getChaptersForQuestion(): any[] {
+        if (!this.currentTest) return [];
+        
+        if (this.currentTest.type === 'CHAPTER') {
+            // For CHAPTER type tests, only the selected chapter is relevant
+            const chapter = this.allChapters.find(c => c.id === this.currentTest.chapterId);
+            return chapter ? [chapter] : [];
+        } else if (this.currentTest.type === 'OVERALL') {
+            // For OVERALL tests, show all chapters from selected subjects/chapters
+            if (this.currentTest.selectedChapters && this.currentTest.selectedChapters.length) {
+                return this.allChapters.filter(c => this.currentTest.selectedChapters.includes(c.id));
+            }
+            return this.allChapters;
+        }
+        
+        return this.allChapters;
+    }
+
     getChaptersForSubjects(subjects: string[] | null | undefined): any[] {
         if (!subjects || !subjects.length) return this.allChapters;
         return this.allChapters.filter(ch => subjects.indexOf(ch.subject) !== -1);
@@ -547,7 +580,8 @@ export class TestManagerComponent implements OnInit, OnChanges {
                 blanks: [],
                 correctAnswer: '',
                 explanation: '',
-                image: null
+                image: null,
+                chapterId: ch ? ch.id : null
             });
 
             // Per-chapter distribution removed: allocate questions by section only
