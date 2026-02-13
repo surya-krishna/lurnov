@@ -3,6 +3,7 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 import { ApiService } from '../../../../api-service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ModalService } from '../../../../modal.service';
 
 @Component({
   selector: 'app-package-manager',
@@ -20,7 +21,10 @@ export class PackageManagerComponent implements OnInit {
   showForm = false;
   showErrors = false;
 
-  constructor(public api: ApiService) { }
+  constructor(
+    public api: ApiService,
+    private modal: ModalService
+  ) { }
 
   ngOnInit() {
     this.fetchPackages();
@@ -69,25 +73,33 @@ export class PackageManagerComponent implements OnInit {
     return pkg.name && pkg.name.trim().length > 0 &&
       typeof pkg.price === 'number' && pkg.price >= 0 &&
       pkg.discount >= 0 && pkg.discount <= 100 &&
-      pkg.duration && typeof pkg.duration.value === 'number' && pkg.duration.value > 0 &&
-      (pkg.duration.unit === 'months' || pkg.duration.unit === 'years') &&
       (pkg.features.content || pkg.features.videos || pkg.features.tests || pkg.features.aiDoubt || pkg.features.aiAnalysis);
   }
 
   removePackage(idx: number) {
     const pkg = this.packages[idx];
     if (!pkg || !pkg.id) {
-      this.packages.splice(idx, 1);
-      this.packagesChange.emit(this.packages);
+      this.modal.confirm('Are you sure you want to remove this package?').then(confirmed => {
+        if (confirmed) {
+          this.packages.splice(idx, 1);
+          this.packagesChange.emit(this.packages);
+        }
+      });
       return;
     }
-    // API call to delete package
-    this.api.delete(`/creator/v2/packages/${pkg.id}`).subscribe({
-      next: () => {
-        this.fetchPackages();
-      },
-      error: (err: any) => {
-        alert('Failed to delete package: ' + (err?.message || 'Unknown error'));
+    
+    // Confirm before deleting saved package
+    this.modal.confirm('Are you sure you want to delete this package? This action cannot be undone.').then(confirmed => {
+      if (confirmed) {
+        // API call to delete package
+        this.api.delete(`/creator/v2/packages/${pkg.id}`).subscribe({
+          next: () => {
+            this.fetchPackages();
+          },
+          error: (err: any) => {
+            alert('Failed to delete package: ' + (err?.message || 'Unknown error'));
+          }
+        });
       }
     });
   }

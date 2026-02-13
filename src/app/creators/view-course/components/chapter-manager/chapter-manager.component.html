@@ -15,15 +15,16 @@
                     class="flex flex-col gap-2 p-2 border rounded bg-gray-50">
                     <div class="flex gap-2 items-center">
                         <input id="chapter-sub-{{si}}-{{ci}}" [(ngModel)]="c.name"
-                            (ngModelChange)="onChapterChange(si,ci)" placeholder="Chapter Title"
+                            (ngModelChange)="onChapterChange(si,ci)" placeholder="Chapter Title" minlength="3" maxlength="100"
                             class="flex-1 rounded-md border border-gray-200 px-3 py-2 text-gray-900" />
+                        <span class="text-xs text-gray-500 ml-2 whitespace-nowrap">{{ (c.name?.length || 0) }}/100</span>
 
                         <!-- Input Type Toggle -->
                         <select [ngModel]="c.inputType" (ngModelChange)="onInputTypeChange(si, ci, $event)"
                             class="rounded-md border border-gray-200 px-2 py-2 text-sm">
-                            <option value="youtube">YouTube</option>
-                            <option value="file">File Upload</option>
-                            <option value="manual">Manual</option>
+                            <!--<option value="youtube">YouTube</option>
+                            <option value="file">File Upload</option>-->
+                            <option value="manual" selected>Manual</option>
                         </select>
 
                         <button (click)="removeChapter(si, ci)" title="Delete chapter" aria-label="Delete chapter"
@@ -42,8 +43,9 @@
                             <strong>Warning:</strong> Only use YouTube links if you are the owner of the video.
                             Copyrights must be protected, or you may face consequences.
                         </div>
-                        <input [(ngModel)]="c.Url" (ngModelChange)="onChapterChange(si,ci)" placeholder="YouTube URL"
+                        <input [(ngModel)]="c.Url" (ngModelChange)="onChapterChange(si,ci)" placeholder="YouTube URL" maxlength="500"
                             class="w-full rounded-md border border-gray-200 px-3 py-2 text-gray-900" />
+                        <p class="text-xs text-gray-500 mt-1">{{ (c.Url?.length || 0) }}/500 characters</p>
                     </div>
 
                     <!-- File Upload Input -->

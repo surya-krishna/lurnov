@@ -9,8 +9,13 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700">Full name</label>
-              <input id="signup-name" name="name" [(ngModel)]="model.name" #nameCtrl="ngModel" required placeholder="Full name" class="mt-1 block w-full rounded-md border border-gray-200 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-              <p *ngIf="(nameCtrl.invalid && (nameCtrl.touched || submitted))" class="mt-1 text-sm text-red-600">Full name is required.</p>
+              <input id="signup-name" name="name" [(ngModel)]="model.name" #nameCtrl="ngModel" required minlength="2" maxlength="100" placeholder="Full name" class="mt-1 block w-full rounded-md border border-gray-200 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              <p class="text-xs text-gray-500 mt-1">{{ (model.name?.length || 0) }}/100 characters</p>
+              <p *ngIf="(nameCtrl.invalid && (nameCtrl.touched || submitted))" class="mt-1 text-sm text-red-600">
+                <span *ngIf="nameCtrl.errors?.['required']">Full name is required.</span>
+                <span *ngIf="nameCtrl.errors?.['minlength']">Full name must be at least 2 characters.</span>
+                <span *ngIf="nameCtrl.errors?.['maxlength']">Full name cannot exceed 100 characters.</span>
+              </p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Date Of Birth</label>
@@ -20,16 +25,22 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Display Name</label>
-              <input id="signup-name" name="name" [(ngModel)]="model.display" #displayCtrl="ngModel" required placeholder="Display Name" class="mt-1 block w-full rounded-md border border-gray-200 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
-              <p *ngIf="(displayCtrl.invalid && (displayCtrl.touched || submitted))" class="mt-1 text-sm text-red-600">Display name is required.</p>
+              <input id="signup-name" name="name" [(ngModel)]="model.display" #displayCtrl="ngModel" required minlength="2" maxlength="50" placeholder="Display Name" class="mt-1 block w-full rounded-md border border-gray-200 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              <p class="text-xs text-gray-500 mt-1">{{ (model.display?.length || 0) }}/50 characters</p>
+              <p *ngIf="(displayCtrl.invalid && (displayCtrl.touched || submitted))" class="mt-1 text-sm text-red-600">
+                <span *ngIf="displayCtrl.errors?.['required']">Display name is required.</span>
+                <span *ngIf="displayCtrl.errors?.['minlength']">Display name must be at least 2 characters.</span>
+                <span *ngIf="displayCtrl.errors?.['maxlength']">Display name cannot exceed 50 characters.</span>
+              </p>
             </div>
 
           <div>
             <label class="block text-sm font-medium text-gray-700">Email</label>
-            <input id="signup-email" name="email" [(ngModel)]="model.email" #emailCtrl="ngModel" required type="email" placeholder="name@domain.com" class="mt-1 block w-full rounded-md border border-gray-200 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+            <input id="signup-email" name="email" [(ngModel)]="model.email" #emailCtrl="ngModel" required type="email" maxlength="254" placeholder="name@domain.com" class="mt-1 block w-full rounded-md border border-gray-200 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
             <p *ngIf="(emailCtrl.invalid && (emailCtrl.touched || submitted))" class="mt-1 text-sm text-red-600">
               <span *ngIf="emailCtrl.errors?.['required']">Email is required.</span>
               <span *ngIf="emailCtrl.errors?.['email']">Enter a valid email.</span>
+              <span *ngIf="emailCtrl.errors?.['maxlength']">Email cannot exceed 254 characters.</span>
             </p>
           </div>
 
@@ -41,18 +52,21 @@
 
           <div>
             <label class="block text-sm font-medium text-gray-700">Address</label>
-            <input id="signup-address" name="address" [(ngModel)]="model.address" placeholder="City, Country" class="mt-1 block w-full rounded-md border border-gray-200 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+            <input id="signup-address" name="address" [(ngModel)]="model.address" maxlength="200" placeholder="City, Country" class="mt-1 block w-full rounded-md border border-gray-200 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+            <p class="text-xs text-gray-500 mt-1">{{ (model.address?.length || 0) }}/200 characters</p>
           </div>
 
           <div>
             <label class="block text-sm font-medium text-gray-700">Bio</label>
-            <textarea id="signup-bio" name="bio" [(ngModel)]="model.bio" rows="4" maxlength="500" placeholder="Short description about your content" class="mt-1 block w-full text-black rounded-md border-gray-200 shadow-sm"></textarea>
+            <textarea id="signup-bio" name="bio" [(ngModel)]="model.bio" rows="4" maxlength="1000" placeholder="Short description about your content" class="mt-1 block w-full text-black rounded-md border-gray-200 shadow-sm"></textarea>
+            <p class="text-xs text-gray-500 mt-1">{{ (model.bio?.length || 0) }}/1000 characters</p>
           </div>
 
           <div class="grid grid-cols-3 gap-4 items-end">
             <div class="col-span-3">
               <label class="block text-sm font-medium text-gray-700">Categories / Tags</label>
-              <input id="signup-categories" name="categories" [(ngModel)]="model.categories" placeholder="design,marketing" class="mt-1 block w-full rounded-md border border-gray-200 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              <input id="signup-categories" name="categories" [(ngModel)]="model.categories" maxlength="200" placeholder="design,marketing" class="mt-1 block w-full rounded-md border border-gray-200 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+              <p class="text-xs text-gray-500 mt-1">{{ (model.categories?.length || 0) }}/200 characters</p>
             </div>
             <!--<div>
               <label class="block text-sm font-medium text-gray-700">Profile image</label>
@@ -68,7 +82,7 @@
 
         <div  *ngIf="otpStage" class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
           <label class="block text-sm font-medium text-gray-700">Verify OTP </label>
-          <input id="signup-email-otp" name="emailOtp" type="text" placeholder="Email OTP" [(ngModel)]="emailOtp" #emailOtpCtrl="ngModel" required class="mt-1 block w-full rounded-md border border-gray-200 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
+          <input id="signup-email-otp" name="emailOtp" type="text" placeholder="Email OTP" [(ngModel)]="emailOtp" #emailOtpCtrl="ngModel" required minlength="4" maxlength="10" class="mt-1 block w-full rounded-md border border-gray-200 px-3 py-2 text-gray-900 placeholder-gray-400 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" />
           <p *ngIf="(emailOtpCtrl.invalid && (emailOtpCtrl.touched || submitted))" class="mt-1 text-sm text-red-600">OTP is required.</p>
         </div>
 

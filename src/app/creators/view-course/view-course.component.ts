@@ -361,6 +361,7 @@ export class ViewCourseComponent implements OnInit, OnDestroy {
   return html;
 }
 
+
 convertQuillHtmlToMarkdown(html: string): string {
   const turndownService = new TurndownService();
 
@@ -372,31 +373,26 @@ convertQuillHtmlToMarkdown(html: string): string {
     },
     replacement: (content, node) => {
       const element = node as HTMLElement;
-      
       // 1. Try to get content from 'data-value' (Proper Quill Formula)
       let formula = element.getAttribute('data-value');
-
       // 2. FALLBACK: If attribute is missing, check the text content
       if (!formula) {
         const text = element.textContent || '';
-        // Heuristic: If it contains a backslash '\', assume it is LaTeX
+        // Heuristic: If it contains a backslash '\\', assume it is LaTeX
         if (text.includes('\\') || text.includes('=')) {
           formula = text;
         } else {
           // If it's just a regular span (like color), return text as is
-          return content; 
+          return content;
         }
       }
-
       if (!formula) return content;
-
       // 3. Block vs Inline Logic
       // Check if the parent <p> is basically empty besides this formula
       const parent = element.parentElement;
-      const isAloneOnLine = parent && 
-                            parent.tagName === 'P' && 
-                            parent.textContent?.replace(formula, '').trim() === '';
-
+      const isAloneOnLine = parent &&
+        parent.tagName === 'P' &&
+        parent.textContent?.replace(formula, '').trim() === '';
       if (isAloneOnLine) {
         return `\n$$\n${formula}\n$$\n`; // Block
       } else {
@@ -405,10 +401,32 @@ convertQuillHtmlToMarkdown(html: string): string {
     }
   });
 
-  // Handle standard superscripts like a^2 (from your snippet) if needed
-  // Turndown handles <sup> automatically, but let's ensure it maps cleanly if you want LaTeX
-  // (Optional: standard turndown maps <sup> to HTML or nothing usually, 
-  // you might want to leave this to default behavior unless you want it converted to ^)
+  // Rule: Convert <pre><code class="language-xxx">...</code></pre> to fenced code blocks
+  turndownService.addRule('fencedCodeBlock', {
+    filter: function (node) {
+      return (
+        node.nodeName === 'PRE' &&
+        !!node.firstChild &&
+        node.firstChild.nodeName === 'CODE'
+      );
+    },
+    replacement: function (content, node) {
+      const codeNode = node.firstChild as HTMLElement;
+      let code = codeNode.textContent || '';
+      // Remove trailing newlines for consistency
+      code = code.replace(/\n+$/, '');
+      // Get language from class="language-xxx"
+      let lang = '';
+      if (codeNode.className) {
+        const match = codeNode.className.match(/language-([\w-]+)/);
+        if (match) {
+          lang = match[1];
+        }
+      }
+      // Always use triple backticks for code blocks
+      return `\n\n\`\`\`${lang}\n${code}\n\`\`\`\n\n`;
+    }
+  });
 
   return turndownService.turndown(html);
 }

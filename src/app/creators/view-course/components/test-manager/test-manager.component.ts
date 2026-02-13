@@ -254,10 +254,14 @@ export class TestManagerComponent implements OnInit, OnChanges {
 
     removeSection(index: number) {
         if (!this.currentTest) return;
-        this.currentTest.sections.splice(index, 1);
-        if (this.focusedSection >= this.currentTest.sections.length) {
-            this.focusedSection = Math.max(0, this.currentTest.sections.length - 1);
-        }
+        this.modal.confirm('Are you sure you want to delete this section? All questions in this section will be lost.').then(confirmed => {
+            if (confirmed) {
+                this.currentTest.sections.splice(index, 1);
+                if (this.focusedSection >= this.currentTest.sections.length) {
+                    this.focusedSection = Math.max(0, this.currentTest.sections.length - 1);
+                }
+            }
+        });
     }
 
     prevSection() {
@@ -301,7 +305,11 @@ export class TestManagerComponent implements OnInit, OnChanges {
 
     removeQuestion(sectionIndex: number, questionIndex: number) {
         if (!this.currentTest) return;
-        this.currentTest.sections[sectionIndex].questions.splice(questionIndex, 1);
+        this.modal.confirm('Are you sure you want to delete this question?').then(confirmed => {
+            if (confirmed) {
+                this.currentTest.sections[sectionIndex].questions.splice(questionIndex, 1);
+            }
+        });
     }
 
     addOption(question: any) {
@@ -309,7 +317,11 @@ export class TestManagerComponent implements OnInit, OnChanges {
     }
 
     removeOption(question: any, index: number) {
-        question.options.splice(index, 1);
+        this.modal.confirm('Are you sure you want to delete this option?').then(confirmed => {
+            if (confirmed) {
+                question.options.splice(index, 1);
+            }
+        });
     }
 
     onUniformMarkingToggle(sectionIndex: number) {
@@ -355,7 +367,11 @@ export class TestManagerComponent implements OnInit, OnChanges {
     }
 
     removePair(question: any, index: number) {
-        question.pairs.splice(index, 1);
+        this.modal.confirm('Are you sure you want to delete this pair?').then(confirmed => {
+            if (confirmed) {
+                question.pairs.splice(index, 1);
+            }
+        });
     }
 
     addSequenceItem(question: any) {
@@ -364,7 +380,11 @@ export class TestManagerComponent implements OnInit, OnChanges {
     }
 
     removeSequenceItem(question: any, index: number) {
-        question.sequenceItems.splice(index, 1);
+        this.modal.confirm('Are you sure you want to delete this sequence item?').then(confirmed => {
+            if (confirmed) {
+                question.sequenceItems.splice(index, 1);
+            }
+        });
     }
 
     onTestTypeChange(newType: string) {

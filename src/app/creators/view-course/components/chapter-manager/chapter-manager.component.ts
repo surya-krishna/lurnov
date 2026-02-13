@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../api-service';
 import { ToastService } from '../../../../toast.service';
+import { ModalService } from '../../../../modal.service';
 
 @Component({
     selector: 'app-chapter-manager',
@@ -23,7 +24,8 @@ export class ChapterManagerComponent {
 
     constructor(
         private api: ApiService,
-        private toast: ToastService
+        private toast: ToastService,
+        private modal: ModalService
     ) { }
 
     onChapterChange(si: number, ci: number) {
@@ -37,23 +39,24 @@ export class ChapterManagerComponent {
 
         // If there's a value (Url) and we are changing types, warn the user
         if (chapter.Url && chapter.Url.trim().length > 0 && oldType !== newType) {
-            const confirmSwitch = confirm('Changing the input type will clear the existing value. Would you like to proceed?');
-            if (!confirmSwitch) {
-                // Revert the selection in the UI (this might need a timeout to update the model back if using ngModel directly)
-                // Since we are intercepting the change before it's fully committed to the model via ngModelChange, 
-                // we might need to manually reset it if the template binding updated it already.
-                // However, with (ngModelChange), the model is updated. So we revert it.
-                setTimeout(() => {
-                    chapter.inputType = oldType;
-                });
-                return;
-            }
-            // User confirmed, clear the value
-            chapter.Url = '';
+            this.modal.confirm('Changing the input type will clear the existing value. Would you like to proceed?').then(confirmSwitch => {
+                if (!confirmSwitch) {
+                    // Revert the selection in the UI
+                    setTimeout(() => {
+                        chapter.inputType = oldType;
+                    });
+                    return;
+                }
+                // User confirmed, clear the value
+                chapter.Url = '';
+                chapter.inputType = newType;
+                this.onChapterChange(si, ci);
+            });
+        } else {
+            // No existing value or same type, just update
+            chapter.inputType = newType;
+            this.onChapterChange(si, ci);
         }
-
-        chapter.inputType = newType;
-        this.onChapterChange(si, ci);
     }
 
     // Validation: subjects must exist and each chapter must have a non-empty title
@@ -101,23 +104,25 @@ export class ChapterManagerComponent {
         // If chapter has an id, it's saved in the backend, so we need to delete it via API
         if (chapter.id && subject.id) {
             // Confirm deletion
-            if (!confirm('Are you sure you want to delete this chapter?')) {
-                return;
-            }
-
-            // Call DELETE API
-            this.api.delete(`/creator/v2/books/${subject.id}/chapters/${chapter.id}`).subscribe({
-                next: () => {
-                    // Remove from local array after successful API call
-                    this.course.subjects[si].chapters.splice(ci, 1);
-                    this.courseChange.emit();
-                    this.toast.success('Chapter deleted successfully');
-                    try { this.validityChange.emit(this.chaptersValid()); } catch (e) { }
-                },
-                error: (err) => {
-                    console.error('Failed to delete chapter:', err);
-                    this.toast.error('Failed to delete chapter');
+            this.modal.confirm('Are you sure you want to delete this chapter?').then(confirmed => {
+                if (!confirmed) {
+                    return;
                 }
+
+                // Call DELETE API
+                this.api.delete(`/creator/v2/books/${subject.id}/chapters/${chapter.id}`).subscribe({
+                    next: () => {
+                        // Remove from local array after successful API call
+                        this.course.subjects[si].chapters.splice(ci, 1);
+                        this.courseChange.emit();
+                        this.toast.success('Chapter deleted successfully');
+                        try { this.validityChange.emit(this.chaptersValid()); } catch (e) { }
+                    },
+                    error: (err) => {
+                        console.error('Failed to delete chapter:', err);
+                        this.toast.error('Failed to delete chapter');
+                    }
+                });
             });
         } else {
             // Chapter is not saved yet, just remove it from the local array

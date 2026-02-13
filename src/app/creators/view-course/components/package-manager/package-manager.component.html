@@ -7,18 +7,21 @@
   <div *ngIf="showForm" class="p-4 border rounded bg-indigo-50 mb-4">
     <div class="mb-2">
       <label class="block text-sm font-medium text-gray-700">Package Name <span class="text-red-600">*</span></label>
-      <input [(ngModel)]="newPackage.name" class="w-full rounded border px-2 py-1" placeholder="e.g. Gold, Silver, Basic" />
+      <input [(ngModel)]="newPackage.name" class="w-full rounded border px-2 py-1" placeholder="e.g. Gold, Silver, Basic" minlength="2" maxlength="50" />
+      <p class="text-xs text-gray-500 mt-1">{{ (newPackage.name?.length || 0) }}/50 characters</p>
       <div *ngIf="showErrors && (!newPackage.name || !newPackage.name.trim())" class="text-xs text-red-600">Name required</div>
     </div>
     <div class="mb-2">
       <label class="block text-sm font-medium text-gray-700">Price (INR) <span class="text-red-600">*</span></label>
-      <input type="number" [(ngModel)]="newPackage.price" class="w-full rounded border px-2 py-1" />
+      <input type="number" [(ngModel)]="newPackage.price" class="w-full rounded border px-2 py-1" min="1" max="1000000" />
+      <p class="text-xs text-gray-500 mt-1">₹1 - ₹10,00,000</p>
       <div *ngIf="showErrors && (typeof newPackage.price !== 'number' || newPackage.price < 0)" class="text-xs text-red-600">Valid price required</div>
     </div>
     <div class="mb-2 flex gap-2 items-end">
       <div class="flex-1">
-        <label class="block text-sm font-medium text-gray-700">Duration <span class="text-red-600">*</span></label>
-        <input type="number" min="1" [(ngModel)]="newPackage.duration.value" class="w-full rounded border px-2 py-1" placeholder="e.g. 6" />
+        <label class="block text-sm font-medium text-gray-700">Duration <span class="text-black-600">( Optional )</span></label>
+        <input type="number" min="1" max="120" [(ngModel)]="newPackage.duration.value" class="w-full rounded border px-2 py-1" placeholder="e.g. 6" />
+        
       </div>
       <div>
         <label class="block text-xs font-medium text-gray-700">Unit</label>

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../../../api-service';
 import { ToastService } from '../../../../toast.service';
+import { ModalService } from '../../../../modal.service';
 
 @Component({
     selector: 'app-subject-manager',
@@ -23,7 +24,8 @@ export class SubjectManagerComponent {
 
     constructor(
         private api: ApiService,
-        private toast: ToastService
+        private toast: ToastService,
+        private modal: ModalService
     ) { }
 
     onCourseChange() {
@@ -52,23 +54,25 @@ export class SubjectManagerComponent {
         // If subject has an id, it's saved in the backend, so we need to delete it via API
         if (subject.id) {
             // Confirm deletion
-            if (!confirm('Are you sure you want to delete this subject? This will also delete all its chapters.')) {
-                return;
-            }
-
-            // Call DELETE API
-            this.api.delete(`/creator/v2/books/${subject.id}`).subscribe({
-                next: () => {
-                    // Remove from local array after successful API call
-                    this.course.subjects.splice(index, 1);
-                    this.courseChange.emit();
-                    this.toast.success('Subject deleted successfully');
-                    try { this.validityChange.emit(this.subjectsValid()); } catch (e) { }
-                },
-                error: (err) => {
-                    console.error('Failed to delete subject:', err);
-                    this.toast.error('Failed to delete subject');
+            this.modal.confirm('Are you sure you want to delete this subject? This will also delete all its chapters.').then(confirmed => {
+                if (!confirmed) {
+                    return;
                 }
+
+                // Call DELETE API
+                this.api.delete(`/creator/v2/books/${subject.id}`).subscribe({
+                    next: () => {
+                        // Remove from local array after successful API call
+                        this.course.subjects.splice(index, 1);
+                        this.courseChange.emit();
+                        this.toast.success('Subject deleted successfully');
+                        try { this.validityChange.emit(this.subjectsValid()); } catch (e) { }
+                    },
+                    error: (err) => {
+                        console.error('Failed to delete subject:', err);
+                        this.toast.error('Failed to delete subject');
+                    }
+                });
             });
         } else {
             // Subject is not saved yet, just remove it from the local array
