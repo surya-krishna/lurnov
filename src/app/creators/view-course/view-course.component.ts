@@ -6,25 +6,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../api-service';
 import { ModalService } from '../../modal.service';
 import { ToastService } from '../../toast.service';
-import { QuillModule } from 'ngx-quill';
 import { marked } from 'marked';
-import TurndownService from 'turndown';
 
 import { CourseInfoComponent } from './components/course-info/course-info.component';
 import { SubjectManagerComponent } from './components/subject-manager/subject-manager.component';
 import { ChapterManagerComponent } from './components/chapter-manager/chapter-manager.component';
 import { TestManagerComponent } from './components/test-manager/test-manager.component';
+import { MarkdownEditorComponent } from './components/markdown-editor/markdown-editor.component';
 import { COURSE_PUBLISH_TNC } from './terms-and-conditions';
 import { forkJoin } from 'rxjs';
-import markedKatex from "marked-katex-extension";
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser'; // Import this
-const options = {
-  throwOnError: false,
-  nonStandard: true,
-  strict: false
-};
-
-//marked.use(markedKatex(options));
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-view-course',
@@ -32,12 +23,12 @@ const options = {
   imports: [
     CommonModule,
     FormsModule,
-    QuillModule,
     CourseInfoComponent,
     SubjectManagerComponent,
     ChapterManagerComponent,
     TestManagerComponent,
-    PackageManagerComponent
+    PackageManagerComponent,
+    MarkdownEditorComponent
   ],
   templateUrl: './view-course.component.html',
   styleUrls: ['./view-course.component.scss']
@@ -80,31 +71,8 @@ export class ViewCourseComponent implements OnInit, OnDestroy {
   // Preview/Chapter Editor State
   selectedChapter: any = null;
   selectedChapterName: string = '';
-  editorContentHtml: string = '';
+  editorContentMarkdown: string = '';
   hasUnsavedChanges: boolean = false;
-  quillModules = {
-    formula: true,
-    toolbar: [
-      ['bold', 'italic', 'underline', 'strike'],
-      ['blockquote', 'code-block'],
-      [{ 'header': 1 }, { 'header': 2 }],
-      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-      [{ 'script': 'sub' }, { 'script': 'super' }],
-      [{ 'indent': '-1' }, { 'indent': '+1' }],
-      [{ 'direction': 'rtl' }],
-      [{ 'size': ['small', false, 'large', 'huge'] }],
-      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-      [{ 'color': [] }, { 'background': [] }],
-      [{ 'font': [] }],
-      [{ 'align': [] }],
-      ['clean'],
-      ['link', 'image', 'video', 'formula']
-    ]
-  };
-
-  private turndownService = new TurndownService();
-
-  
 
   constructor(
     private route: ActivatedRoute,
@@ -113,32 +81,7 @@ export class ViewCourseComponent implements OnInit, OnDestroy {
     private modal: ModalService,
     private toast: ToastService,
     private sanitizer: DomSanitizer
-  ) { 
-    // 2. Add a custom rule to detect KaTeX rendered HTML and revert it to $...$
-    this.turndownService.addRule('katex-math', {
-      filter: function (node) {
-        // Look for the distinct class used by KaTeX wrappers
-        return node.nodeName === 'SPAN' && node.classList.contains('katex');
-      },
-      replacement: function (content, node) {
-        // Attempt to find the hidden annotation tag containing the source LaTeX
-        const texAnnotation = node.querySelector('annotation[encoding="application/x-tex"]');
-        
-        if (texAnnotation) {
-          const rawTex = texAnnotation.textContent;
-          
-          // Heuristic: If it contains newlines, treat as block math ($$), else inline ($)
-          if (rawTex.includes('\n') || node.classList.contains('katex-display')) {
-            return '\n$$ ' + rawTex + ' $$\n';
-          }
-          return '$' + rawTex + '$';
-        }
-        
-        // Fallback if annotation isn't found (rare if configured correctly)
-        return content;
-      }
-    });
-  }
+  ) {}
 
   ngOnInit() {
     this.route.params.subscribe(params => {
@@ -325,113 +268,6 @@ export class ViewCourseComponent implements OnInit, OnDestroy {
     });
   }
 
-  convertMarkdownToQuillHtml(markdown: string): string {
-  const mathExpressions: string[] = [];
-  
-  // FIXED REGEX:
-  // 1. (\$\$[\s\S]*?\$\$) -> Matches block $$...$$ (including new lines)
-  // 2. (\$[^\n\r]+?\$[^$]) -> Matches inline $...$ (no new lines allowed inside)
-  // We use a simplified logic here: catch BOTH with one distinct pattern
-  
-  let protectedText = markdown.replace(/(\$\$[\s\S]*?\$\$|\$[^$\n]*?\$)/g, (match) => {
-    // 'match' includes the $$ or $ delimiters. We need to strip them.
-    
-    // Check if it is Block Level (starts with $$)
-    const isBlock = match.startsWith('$$');
-    
-    // Strip delimiters: Remove first 1 or 2 chars, and last 1 or 2 chars
-    const content = isBlock ? match.slice(2, -2) : match.slice(1, -1);
-    
-    mathExpressions.push(content);
-    
-    // We add a distinct prefix if it was block, though Quill treats them mostly the same visually
-    return `%%MATH${mathExpressions.length - 1}%%`;
-  });
-
-  // Convert rest of Markdown to HTML
-  let html = marked.parse(protectedText) as string;
-
-  // Restore Math
-  html = html.replace(/%%MATH(\d+)%%/g, (match, index) => {
-    const formula = mathExpressions[parseInt(index)];
-    // Quill Render
-    return `<span class="ql-formula" data-value="${formula}"></span>`;
-  });
-
-  return html;
-}
-
-
-convertQuillHtmlToMarkdown(html: string): string {
-  const turndownService = new TurndownService();
-
-  // Rule: Detect Math in Spans
-  turndownService.addRule('quillFormula', {
-    filter: (node) => {
-      // We target ALL spans
-      return node.nodeName === 'SPAN';
-    },
-    replacement: (content, node) => {
-      const element = node as HTMLElement;
-      // 1. Try to get content from 'data-value' (Proper Quill Formula)
-      let formula = element.getAttribute('data-value');
-      // 2. FALLBACK: If attribute is missing, check the text content
-      if (!formula) {
-        const text = element.textContent || '';
-        // Heuristic: If it contains a backslash '\\', assume it is LaTeX
-        if (text.includes('\\') || text.includes('=')) {
-          formula = text;
-        } else {
-          // If it's just a regular span (like color), return text as is
-          return content;
-        }
-      }
-      if (!formula) return content;
-      // 3. Block vs Inline Logic
-      // Check if the parent <p> is basically empty besides this formula
-      const parent = element.parentElement;
-      const isAloneOnLine = parent &&
-        parent.tagName === 'P' &&
-        parent.textContent?.replace(formula, '').trim() === '';
-      if (isAloneOnLine) {
-        return `\n$$\n${formula}\n$$\n`; // Block
-      } else {
-        return `$${formula}$`; // Inline
-      }
-    }
-  });
-
-  // Rule: Convert <pre><code class="language-xxx">...</code></pre> to fenced code blocks
-  turndownService.addRule('fencedCodeBlock', {
-    filter: function (node) {
-      return (
-        node.nodeName === 'PRE' &&
-        !!node.firstChild &&
-        node.firstChild.nodeName === 'CODE'
-      );
-    },
-    replacement: function (content, node) {
-      const codeNode = node.firstChild as HTMLElement;
-      let code = codeNode.textContent || '';
-      // Remove trailing newlines for consistency
-      code = code.replace(/\n+$/, '');
-      // Get language from class="language-xxx"
-      let lang = '';
-      if (codeNode.className) {
-        const match = codeNode.className.match(/language-([\w-]+)/);
-        if (match) {
-          lang = match[1];
-        }
-      }
-      // Always use triple backticks for code blocks
-      return `\n\n\`\`\`${lang}\n${code}\n\`\`\`\n\n`;
-    }
-  });
-
-  return turndownService.turndown(html);
-}
-
-
   saveSubjects() {
     this.actionMessage = 'Saving subjects...';
     const payload = this.course.subjects.map((s: any) => ({
@@ -616,22 +452,21 @@ convertQuillHtmlToMarkdown(html: string): string {
     this.selectedChapter = chapter;
     this.loading = true;
     
-    this.editorContentHtml= "<b>Loading chapter content</b>"
+    this.editorContentMarkdown = "Loading chapter content...";
     let $chapterRequest = this.api.get(`/creator/v2/chapters/${this.selectedChapter["id"]}`);
     forkJoin([$chapterRequest]).subscribe((response)=>{
       this.loading=false;
       this.selectedChapter = response[0];
       this.selectedChapterName = this.selectedChapter.Name || 'Untitled Chapter';
       chapter = this.selectedChapter;
-      // Load chapter content into Quill editor
+      // Load chapter content directly as markdown
       if (chapter.content) {
-        // Convert markdown to HTML for Quill editor
-        //chapter.content = chapter.content.replace("\\\\","\\").replace("\\","\\\\");
+        // Clean up any double backslashes in the content
         chapter.content = chapter.content.replace(/\\\\/g, '\\');
-        this.editorContentHtml = this.convertMarkdownToQuillHtml(chapter.content); // marked.parse(chapter.content) as string;
-        this.parsedContent = this.sanitizer.bypassSecurityTrustHtml(this.editorContentHtml);
+        this.editorContentMarkdown = chapter.content;
+        this.parsedContent = this.sanitizer.bypassSecurityTrustHtml(marked.parse(chapter.content) as string);
       } else {
-        this.editorContentHtml = 'Chapter being generate please try after sometime';
+        this.editorContentMarkdown = 'Chapter content is being generated. Please try again later.';
       } 
     })
   
@@ -645,9 +480,8 @@ convertQuillHtmlToMarkdown(html: string): string {
   saveChapterContent() {
     if (!this.selectedChapter) return;
 
-    // Convert HTML from Quill editor back to markdown
-    const markdown = this.convertQuillHtmlToMarkdown(this.editorContentHtml);//this.turndownService.turndown(this.editorContentHtml);
-    this.selectedChapter.content = markdown;
+    // Save markdown content directly
+    this.selectedChapter.content = this.editorContentMarkdown;
 
     // Save the entire course (which includes the updated chapter content)
     this.updateChapterContent();
@@ -663,11 +497,9 @@ convertQuillHtmlToMarkdown(html: string): string {
     });
   }
 
-  onQuillChange(event: any) {
+  onMarkdownContentChange(content: string) {
+    this.editorContentMarkdown = content;
     this.hasUnsavedChanges = true;
-  }
-
-  onEditorCreated(event: any) {
   }
 
   checkChapterStatus() {

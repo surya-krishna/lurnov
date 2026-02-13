@@ -167,7 +167,7 @@
         <div *ngIf="stepEquals(4)" class="space-y-4">
           <div class="prose max-w-none">
             <p class="text-sm">Select a chapter from the sidebar to preview its content.</p>
-            <!-- Content preview logic with markdown-aware Quill editor -->
+            <!-- Content preview logic with markdown editor -->
             <div *ngIf="selectedChapter !== null" class="space-y-3">
               <div class="flex items-center justify-between">
                 <div class="text-sm text-gray-600">Editing: {{ selectedChapterName }}</div>
@@ -178,8 +178,11 @@
                 </div>
               </div>
 
-              <quill-editor [styles]="{height: '300px'}" [(ngModel)]="editorContentHtml" [modules]="quillModules"
-                (onContentChanged)="onQuillChange($event)" (onEditorCreated)="onEditorCreated($event)"></quill-editor>
+              <app-markdown-editor 
+                [content]="editorContentMarkdown" 
+                [editorHeight]="'400px'"
+                (contentChange)="onMarkdownContentChange($event)">
+              </app-markdown-editor>
                 
                 
             </div>
